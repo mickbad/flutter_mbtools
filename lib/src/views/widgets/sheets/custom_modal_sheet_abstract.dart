@@ -185,7 +185,7 @@ abstract class CustomModalSheetAbstract extends StatefulWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: backgroundColorTitleBox ??
-            ToolsConfigApp.appSecondaryColor.withOpacity(0.90),
+            ToolsConfigApp.appSecondaryColor.withValues(alpha: 0.90),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(borderRadius?.topLeft.x ?? 5.0),
           topRight: Radius.circular(borderRadius?.topRight.x ?? 5.0),

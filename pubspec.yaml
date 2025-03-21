@@ -1,6 +1,6 @@
 name: mbtools
 description: "Ensemble d'outils dart/flutter."
-version: 1.0.0
+version: 1.1.0
 homepage: https://www.ricochets.dev
 
 environment:
@@ -14,7 +14,7 @@ dependencies:
   # gestion de l'application
   connectivity_plus: ^6.1.0
   package_info_plus: ^8.1.0
-  device_info_plus: ^11.1.0
+  device_info_plus: ^11.3.3
   path_provider: ^2.1.4
   flutter_markdown: ^0.7.4+1
   markdown: ^7.2.2
@@ -49,12 +49,12 @@ dependencies:
   fetch_client: ^1.1.2
 
   # notifications
-  flutter_local_notifications: ^18.0.0
+  flutter_local_notifications: ^19.0.0
   local_notifier: ^0.1.6
 
   # outils design/utilitaire
   share_plus: ^10.1.1
-  file_picker: ^9.0.1
+  file_picker: ^9.2.1
   flutter_file_dialog: ^3.0.2
   slug_it: ^0.0.1
   pasteboard:
@@ -63,7 +63,7 @@ dependencies:
       path: packages/pasteboard
 
   # gestion des sons
-  audioplayers: ^6.1.0
+  audioplayers: ^6.4.0
   # just_audio: ^0.9.42
   # just_audio_windows: ^0.2.2
   # just_audio_mpv: ^0.1.7 # TODO : voir https://pub.dev/packages/just_audio_media_kit please !!!!!!

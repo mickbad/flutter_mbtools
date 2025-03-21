@@ -271,6 +271,11 @@ class CustomIconButtonState extends State<CustomIconButton>
 
   @override
   Widget build(BuildContext context) {
+    // indique si le widget du label est un TextField auquel cas on n'affiche
+    // pas le widget dans un InkWell car sur ios on ne peut plus avoir la
+    // barre de copier/coller (InkWell interceptant les événements click)
+    bool isDisplayTextField = false;
+
     // choix du label à afficher
     Widget childInside;
     if (widget.child != null) {
@@ -278,6 +283,7 @@ class CustomIconButtonState extends State<CustomIconButton>
       childInside = widget.child!;
     } else if (widget.textFieldHintText != null) {
       // champ texte d'édition
+      isDisplayTextField = true;
       childInside = Padding(
         padding: widget.textFieldPadding ?? const EdgeInsets.all(0.0),
         child: TextField(
@@ -336,32 +342,34 @@ class CustomIconButtonState extends State<CustomIconButton>
       );
     }
 
-    // Design
-    return InkWell(
-      onTap: (widget.onActionButton == null)
-          ? null
-          : () async => await onPressedActivate(),
-      child: Container(
-        padding: const EdgeInsets.all(0.0),
-        height: widget.height,
-        width: widget.width,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(widget.borderRadius),
-          color: textBackgroundColor,
-          boxShadow: [
-            if (widget.showGlowBorder) ...[
-              BoxShadow(
-                color: textBackgroundColor.withOpacity(.5),
-                spreadRadius: 2,
-                blurRadius: 7,
-                offset: const Offset(0, 0), // changes position of shadow
-              ),
-            ],
+    // construction du label
+    return Container(
+      padding: const EdgeInsets.all(0.0),
+      height: widget.height,
+      width: widget.width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        color: textBackgroundColor,
+        boxShadow: [
+          if (widget.showGlowBorder) ...[
+            BoxShadow(
+              color: textBackgroundColor.withValues(alpha: .5),
+              spreadRadius: 2,
+              blurRadius: 7,
+              offset: const Offset(0, 0), // changes position of shadow
+            ),
           ],
-        ),
-        child: Row(
-          children: <Widget>[
-            LayoutBuilder(builder: (context, constraints) {
+        ],
+      ),
+      child: Row(
+        children: <Widget>[
+          // Bouton en-tête du "bouton"
+          InkWell(
+            onTap: (widget.onActionButton == null)
+                ? null
+                : () async => await onPressedActivate(),
+            child: LayoutBuilder(builder: (context, constraints) {
+              // le bouton animé
               return Container(
                 height: constraints.maxHeight,
                 width: constraints.maxHeight,
@@ -375,11 +383,20 @@ class CustomIconButtonState extends State<CustomIconButton>
                 ),
               );
             }),
-            Expanded(
-              child: childInside,
-            ),
-          ],
-        ),
+          ),
+
+          // le contenu du bouton/label ou textfield
+          Expanded(
+            child: (isDisplayTextField)
+                ? childInside // TextField en conflit avec InkWell !
+                : InkWell(
+                    onTap: (widget.onActionButton == null)
+                        ? null
+                        : () async => await onPressedActivate(),
+                    child: childInside,
+                  ),
+          ),
+        ],
       ),
     );
   }

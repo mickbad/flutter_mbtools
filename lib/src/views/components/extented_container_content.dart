@@ -176,9 +176,9 @@ class _ExtendedContainerContentState extends State<ExtendedContainerContent> {
       gradient = LinearGradient(
         colors: [
           widget.contentBackgroundStartGradientColor ??
-              Colors.white.withOpacity(0.0),
+              Colors.white.withValues(alpha: 0.0),
           widget.contentBackgroundEndGradientColor ??
-              Colors.white.withOpacity(0.0),
+              Colors.white.withValues(alpha: 0.0),
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -226,8 +226,9 @@ class _ExtendedContainerContentState extends State<ExtendedContainerContent> {
           width: min(
               widget.width, max(0, widget.contentWidth ?? widget.width * .6)),
           blur: 10,
-          // color: Colors.white.withOpacity(0.1),
-          color: widget.contentBackgroundColor ?? Colors.white.withOpacity(0.1),
+          // color: Colors.white.withValues(alpha: 0.1),
+          color: widget.contentBackgroundColor ??
+              Colors.white.withValues(alpha: 0.1),
 
           // rond central pour le flare?
           gradient: gradient,
@@ -239,7 +240,7 @@ class _ExtendedContainerContentState extends State<ExtendedContainerContent> {
 
           // l'ombre
           shadowStrength: 10,
-          shadowColor: Colors.white.withOpacity(0.24),
+          shadowColor: Colors.white.withValues(alpha: 0.24),
 
           // contenu
           child: Padding(
@@ -650,9 +651,10 @@ class MenuButtonItem extends StatelessWidget {
       height: heightMenus,
       onTap: (enabled) ? onTap : null,
       borderRadius: borderRadius,
-      borderColor: Theme.of(context).secondaryHeaderColor.withOpacity(0.5),
-      splashColor: Theme.of(context).primaryColor.withOpacity(0.1),
-      overlayColor: (enabled) ? null : Colors.black.withOpacity(0.4),
+      borderColor:
+          Theme.of(context).secondaryHeaderColor.withValues(alpha: 0.5),
+      splashColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+      overlayColor: (enabled) ? null : Colors.black.withValues(alpha: 0.4),
       imageColorFilterEnabled: (imageColorBend != null),
       imageColorFilter:
           ColorFilter.mode(imageColorBend ?? Colors.black, imageColorBlendMode),

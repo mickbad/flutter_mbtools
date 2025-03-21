@@ -28,7 +28,24 @@ Future main() async {
   ///
   /// Configuration des notifications desktop
   ///
-  // await DesktopNotifications.initNotificationSystem();
+  await DesktopNotifications.initNotificationSystem();
+  Future.delayed(const Duration(seconds: 10), () async {
+    // affichage d'une notification système
+    ToolsConfigApp.logger.i("User show DesktopNotifications!");
+
+    if (ToolsConfigApp.isDesktopApplication) {
+      DesktopNotifications.displayNotification(
+        title: appName,
+        body: "It's Ok for me!",
+        onNotificationClick: () {
+          ToolsConfigApp.logger.i("User click on DesktopNotifications!");
+        },
+      );
+    } else {
+      mbNotifications t = mbNotifications("mipmap/ic_launcher");
+      await t.sendBasicMessage(appName, "It's Ok for me!", "payload");
+    }
+  });
 
   ///
   /// Configuration de la fenêtre

@@ -1,6 +1,7 @@
 ///
 /// https://github.com/MohamedAbd0/stroke_text/
 ///
+library;
 
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,8 @@ class StrokeText extends StatelessWidget {
   final TextOverflow? overflow;
   final TextAlign? textAlign;
 
-  const StrokeText(this.text, {
+  const StrokeText(
+    this.text, {
     Key? key,
     this.strokeWidth = 0,
     this.strokeColor = Colors.black,
@@ -53,14 +55,11 @@ class StrokeText extends StatelessWidget {
         ),
         Text(
           text,
-          style: TextStyle(
-              color: textColor
-          ).merge(style),
+          style: TextStyle(color: textColor).merge(style),
           maxLines: maxLines,
           overflow: overflow,
           textAlign: textAlign,
         ),
-
       ],
     );
   }

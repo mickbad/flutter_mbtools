@@ -88,7 +88,7 @@ class _CustomModalBottomSheetState extends State<CustomModalBottomSheet> {
           padding: const EdgeInsets.all(0.0),
           decoration: BoxDecoration(
             color: widget.backgroundColorModal ??
-                ToolsConfigApp.appSecondaryColor.withOpacity(0.70),
+                ToolsConfigApp.appSecondaryColor.withValues(alpha: 0.70),
             borderRadius: widget.borderRadiusModal ??
                 const BorderRadius.only(
                   topLeft: Radius.circular(5.0),

@@ -28,6 +28,8 @@ pubspec.lock
 **/doc/api/
 .dart_tool/
 build/
+.cxx/
+Podfile.lock
 
 
 .flutter-plugins
