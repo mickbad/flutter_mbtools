@@ -157,6 +157,20 @@ class ToolsHelpers {
   // ---------------------------------------------------------------------------
 
   ///
+  /// Validation d'une url
+  ///
+  static bool validateHttpUrl(String url) {
+    // Expression régulière pour correspondre à une URL http ou https complète
+    final RegExp regex = RegExp(
+      r'^https?://[^\s/$.?#].\S*$',
+      caseSensitive: false,
+    );
+
+    // Vérifie si l'URL correspond au format requis
+    return regex.hasMatch(url);
+  }
+
+  ///
   /// Procédure de téléchargement d'une ressouce sur internet et sauvegarde dans
   /// un fichier en local
   /// [encrypt] : vrai pour que le fichier soit crypté après la lecture
@@ -390,6 +404,22 @@ class ToolsHelpers {
       code = "#$code";
     }
     return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+
+  ///
+  /// Fonction de convertion d'un couleur en hexa
+  ///
+  static String colorToHex(Color color) {
+    // extraction couleur
+    final hex = color.toARGB32();
+
+    // Extraire les composantes rouge, verte et bleue
+    final red = ((0x00ff0000 & hex) >> 16).toRadixString(16).padLeft(2, '0');
+    final green = ((0x0000ff00 & hex) >> 8).toRadixString(16).padLeft(2, '0');
+    final blue = ((0x000000ff & hex) >> 0).toRadixString(16).padLeft(2, '0');
+
+    // Construire la chaîne hexadécimale
+    return '#$red$green$blue';
   }
 
   ///

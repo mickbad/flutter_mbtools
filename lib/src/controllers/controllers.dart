@@ -11,7 +11,8 @@ export 'services/soundfx.dart';
 export 'services/connectitivity_status.dart';
 export 'services/log.dart';
 export 'services/apidev.dart';
-export './services/desktop_notifications.dart';
+export 'services/desktop_notifications.dart';
 
 // les controleurs
-export './SettingsService.dart';
+export 'SettingsService.dart';
+export "theme_service.dart";

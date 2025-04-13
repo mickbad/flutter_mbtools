@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mbtools/mbtools.dart';
+import 'package:mbtools_display/mytheme.dart';
 
 const appName = "mbTools Sample";
 
@@ -56,7 +58,9 @@ Future main() async {
   );
 
   // démarrage de l'application
-  runApp(const MyApp());
+  runApp(const ProviderScope(
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -64,6 +68,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    /*
+     -> Méthode normale
+
     return MaterialApp(
       navigatorKey: ToolsConfigApp.appNavigatorKey,
       debugShowCheckedModeBanner: false,
@@ -73,17 +80,45 @@ class MyApp extends StatelessWidget {
       ),
       home: const MainApp(),
     );
+    */
+
+    /*
+     -> Méthode avec riverpod pour gérer le thème
+    */
+    // démarrage de l'application
+    return Consumer(
+      builder: (context, ref, _) {
+        // Récupération et application du thème de l'application
+        final themeData = ref.watch(appThemeProvider);
+
+        final Widget app = MaterialApp(
+          navigatorKey: ToolsConfigApp.appNavigatorKey,
+          debugShowCheckedModeBanner: false,
+          theme: themeData,
+          showPerformanceOverlay: false,
+          title: appName,
+          home: const MainApp(),
+        );
+
+        return ToolsConfigApp.desktopWindowSizeObserver(
+          app: app,
+          onChangeWindowSize: (newSize) {
+            ToolsConfigApp.logger.t("Nouvelle taille de fenêtre : $newSize");
+          },
+        );
+      },
+    );
   }
 }
 
-class MainApp extends StatefulWidget {
+class MainApp extends ConsumerStatefulWidget {
   const MainApp({super.key});
 
   @override
-  State<MainApp> createState() => _MainAppState();
+  ConsumerState<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class _MainAppState extends ConsumerState<MainApp> {
   // controleur de lien pour les menus
   final BackgroundOpenLinkController backgroundOpenLinkController =
       BackgroundOpenLinkController(
@@ -93,6 +128,7 @@ class _MainAppState extends State<MainApp> {
 
   // flag
   bool animateBackground = true;
+  String currentThemeName = "";
 
   // controleurs
   final CustomModalSheetController modalGeneralController =
@@ -103,6 +139,12 @@ class _MainAppState extends State<MainApp> {
       CustomIconButtonController();
   TextEditingController txtButtonController = TextEditingController();
   String txtButtonContent = "";
+
+  @override
+  void initState() {
+    super.initState();
+    currentThemeName = ToolsThemeApp.currentThemeName;
+  }
 
   @override
   void dispose() {
@@ -135,7 +177,7 @@ class _MainAppState extends State<MainApp> {
       ),
       subtitle: "Demonstration",
       subtitleStyle: TextStyle(
-        color: ToolsConfigApp.appGreenColor,
+        color: ToolsConfigApp.appPrimaryColor.lighten(0.2),
         fontSize: 15.5,
       ),
       legend: ToolsConfigApp.appCopyrightName,
@@ -460,6 +502,59 @@ class _MainAppState extends State<MainApp> {
             SoundFx.playAddItem();
             final int i = Random().nextInt(100);
             ToolsConfigApp.setDesktopIconAppBadge(text: "$i");
+          },
+        ),
+
+        // Changement de thème
+        MenuButtonItem(
+          enabled: true,
+          heightMenus: 60,
+          imageAsset: "assets/images/foret-fees-nuit.png",
+          title: "Thème : $currentThemeName",
+          titleStyle: TextStyle(color: ToolsConfigApp.appWhiteColor),
+          imageColorBend: ToolsConfigApp.appPrimaryColor.withValues(alpha: 0.3),
+          trailing: Icon(
+            Icons.colorize,
+            color: ToolsConfigApp.appPrimaryColor,
+          ),
+          leading: Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: ToolsConfigApp.appPrimaryColor,
+              border: Border.all(
+                color: ToolsConfigApp.appSecondaryColor, // Couleur du contour
+                width: 2, // Épaisseur du contour
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: ToolsConfigApp.appThirdColor.withValues(alpha: .5),
+                  spreadRadius: 7,
+                  blurRadius: 2,
+                  offset: const Offset(0, 0),
+                ),
+              ],
+            ),
+          ),
+          onTap: () {
+            // récupération des thèmes disponibles
+            final themesAvailable = ToolsThemeApp.primaryColorsListAvailable;
+
+            // Générer un index aléatoire
+            Random random = Random();
+            int randomIndex = random.nextInt(themesAvailable.length);
+
+            // Récupérer l'élément aléatoire
+            String randomTheme = themesAvailable[randomIndex]["desc"];
+            ToolsConfigApp.logger.i("Change theme to: $randomTheme");
+
+            // affectation du thème
+            ToolsThemeAppRiverpod currentTheme =
+                ref.read(appThemeProvider.notifier);
+            currentTheme.setTheme(randomTheme);
+            setState(() {
+              currentThemeName = randomTheme;
+            });
           },
         ),
       ],

@@ -9,6 +9,7 @@ import 'package:flutter_desktop_sleep/flutter_desktop_sleep.dart';
 import 'package:mbtools/src/views/components/windows_app_caption.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:windows_taskbar/windows_taskbar.dart';
 
 import "../controllers/controllers.dart";
 
@@ -350,6 +351,7 @@ class ToolsConfigApp {
   ///
   static void setDesktopIconAppBadge({
     String text = "",
+    String? windowsIcon,
     WindowManager? window,
   }) {
     // exclusion des plateformes mobile
@@ -358,12 +360,53 @@ class ToolsConfigApp {
     }
 
     // Exclusion de plateformes non comptabile
-    if (Platform.isWindows || Platform.isLinux) {
+    if (Platform.isLinux) {
       return;
-    }
+    } else if (Platform.isMacOS) {
+      // affichage du badge
+      (window ?? windowManager).setBadgeLabel(text);
+    } else if (Platform.isWindows) {
+      // chemin de l'icône à afficher dans la barre de tâche Windows
+      String? pathIco;
 
-    // affichage du badge
-    (window ?? windowManager).setBadgeLabel(text);
+      // utilisation du badge fourni par le programme
+      if (windowsIcon != null) {
+        pathIco = windowsIcon;
+      }
+
+      // Création du badge si le texte est non vide
+      else if (text.isNotEmpty) {
+        // détermination du badge depuis assets/images/icons/notifications/
+        pathIco =
+            "packages/mbtools/assets/images/notifications/windows-notifications-9p.ico";
+        if (["1", "2", "3", "4", "5", "6", "7", "8", "9"].contains(text)) {
+          pathIco =
+              "packages/mbtools/assets/images/notifications/windows-notifications-$text.ico";
+        }
+      }
+
+      // affichage du badge
+      if (pathIco != null) {
+        // badge
+        WindowsTaskbar.setOverlayIcon(
+          ThumbnailToolbarAssetIcon(pathIco),
+          tooltip: text,
+        );
+
+        // flash icone de la barre de tâches
+        WindowsTaskbar.setFlashTaskbarAppIcon(
+          mode: TaskbarFlashMode.all | TaskbarFlashMode.timernofg,
+          timeout: const Duration(milliseconds: 500),
+        );
+
+        // arrêt programmé du flash
+        Future.delayed(const Duration(seconds: 3),
+            () => WindowsTaskbar.resetFlashTaskbarAppIcon());
+      } else {
+        // annulation du badge car pas de texte
+        WindowsTaskbar.resetOverlayIcon();
+      }
+    }
   }
 
   ///
