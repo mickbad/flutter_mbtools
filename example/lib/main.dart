@@ -563,7 +563,10 @@ class _MainAppState extends ConsumerState<MainApp> {
     // affichage de la fenêtre avec l'observeur de dimensions
     return ToolsConfigApp.desktopWindowSizeObserver(
       app: Scaffold(
-        body: menuDisplayWidget,
+        // pour gérer la fenêtre sans bord
+        body: ToolsConfigApp.desktopWindowShowAppCaptionIcons(
+          body: menuDisplayWidget,
+        ),
       ),
       onChangeWindowSize: (newSize) {
         ToolsConfigApp.logger.t("Nouvelle taille de fenêtre : $newSize");
