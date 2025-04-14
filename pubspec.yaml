@@ -79,6 +79,7 @@ flutter:
   assets:
     - assets/audio/app/
     - assets/images/
+    - assets/images/notifications/
     
   # To add custom fonts to your package, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

@@ -379,7 +379,7 @@ class ToolsConfigApp {
         // détermination du badge depuis assets/images/icons/notifications/
         pathIco =
             "packages/mbtools/assets/images/notifications/windows-notifications-9p.ico";
-        if (["1", "2", "3", "4", "5", "6", "7", "8", "9"].contains(text)) {
+        if (["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].contains(text)) {
           pathIco =
               "packages/mbtools/assets/images/notifications/windows-notifications-$text.ico";
         }
