@@ -59,7 +59,8 @@ class RippleImageButton extends StatelessWidget {
     this.splashColor,
     this.overlayColor,
     this.imageColorFilterEnabled = false,
-    this.imageColorFilter = const ColorFilter.mode(Colors.purple, BlendMode.softLight),
+    this.imageColorFilter =
+        const ColorFilter.mode(Colors.purple, BlendMode.softLight),
     this.children,
     this.childrenMainAxisAlignment = MainAxisAlignment.center,
     this.childrenCrossAxisAlignment = CrossAxisAlignment.center,
@@ -95,11 +96,12 @@ class RippleImageButton extends StatelessWidget {
     Widget btnContent = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        if (trailing != null)...[
-          trailing!,
-          const SizedBox(width: 10.0,),
+        if (leading != null) ...[
+          leading!,
+          const SizedBox(
+            width: 10.0,
+          ),
         ],
-
         Expanded(
           child: Column(
             mainAxisAlignment: childrenMainAxisAlignment,
@@ -107,10 +109,11 @@ class RippleImageButton extends StatelessWidget {
             children: children ?? [],
           ),
         ),
-
-        if (leading != null)...[
-          const SizedBox(width: 10.0,),
-          leading!,
+        if (trailing != null) ...[
+          const SizedBox(
+            width: 10.0,
+          ),
+          trailing!,
         ],
       ],
     );
@@ -128,10 +131,11 @@ class RippleImageButton extends StatelessWidget {
             color: color ?? Colors.transparent,
             image: (image != null)
                 ? DecorationImage(
-                  image: image!,
-                  fit: fit,
-                  colorFilter: (imageColorFilterEnabled) ? imageColorFilter : null,
-                )
+                    image: image!,
+                    fit: fit,
+                    colorFilter:
+                        (imageColorFilterEnabled) ? imageColorFilter : null,
+                  )
                 : null,
           ),
           child: Material(

@@ -33,7 +33,7 @@ class SettingsService {
     Map<String, dynamic> map = {
       // gestion utilisateur
       "currentuser_token": "",
-      "currentuser_secret_key": "o4hfJumYBmuwdOa4WMuOPYSIR1abPavj",
+      "currentuser_secret_key": ToolsHelpers.generatePassword(length: 32),
 
       // gestion de la rétention du screensaver
       "wakelock_enabled": false,
@@ -183,7 +183,7 @@ class SettingsService {
   // ---------------------------------------------------------------------------
 
   String getCurrentUserToken() {
-    return _prefs?.get("currentuser_token");
+    return _prefs?.get("currentuser_token") ?? "";
   }
 
   void setCurrentUserToken(String value) {
@@ -191,7 +191,7 @@ class SettingsService {
   }
 
   String getCurrentUserSecretKey() {
-    return _prefs?.get("currentuser_secret_key");
+    return _prefs?.get("currentuser_secret_key") ?? "";
   }
 
   void setCurrentUserSecretKey(String value) {

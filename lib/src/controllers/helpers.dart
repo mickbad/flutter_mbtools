@@ -3,6 +3,7 @@
 ///
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +41,10 @@ class ToolsHelpers {
   static Future<String> realAppSupportPathname(String pathname) async {
     // sortie si web
     if (kIsWeb) {
-      return ".";
+      return p.join(
+        ".",
+        pathname,
+      );
     }
 
     // get support path
@@ -116,8 +120,6 @@ class ToolsHelpers {
   ///
   /// Est-ce un iphone ?
   ///
-  /// return (isIphone, name device, version OS)
-  ///
   static Future<bool> isIphone() async {
     // récupération des informations du device
     String model;
@@ -175,8 +177,12 @@ class ToolsHelpers {
   /// un fichier en local
   /// [encrypt] : vrai pour que le fichier soit crypté après la lecture
   ///
-  static Future<String?> downloadUrlToFile(String url, String pathname,
-      {bool encrypt = false}) async {
+  static Future<String?> downloadUrlToFile(
+    String url,
+    String pathname, {
+    bool encrypt = false,
+    String? encryptAESKey,
+  }) async {
     try {
       // Envoyer une requête GET à l'URL
       final response = await http.get(Uri.parse(url));
@@ -189,7 +195,7 @@ class ToolsHelpers {
 
       // chiffrement?
       if (encrypt) {
-        body = encryptAESBytes(body);
+        body = encryptAESBytes(body, encryptAESKey);
       }
 
       // Écrire les données de la réponse dans le fichier
@@ -244,11 +250,64 @@ class ToolsHelpers {
   // ---------------------------------------------------------------------------
 
   ///
+  /// Outil pour créer un mot de passe aléatoire
+  ///
+  static String generatePassword({
+    required int length,
+    bool enableNumber = true,
+    bool enableLetters = true,
+    bool enableSpecial = false,
+    bool lowerCase = false,
+    bool upperCase = false,
+    bool removeAmbigousItems = false,
+  }) {
+    // dictionnary
+    const String numbers = '0123456789';
+    const String letters =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const String special = ':,-/@*+=_()[]{}&\$';
+    const String ambigousItems = '10oOlL';
+
+    // construction du dictionnaire autorisé
+    String dictionnary = '';
+    if (enableNumber) dictionnary += numbers;
+    if (enableLetters) dictionnary += letters;
+    if (enableSpecial) dictionnary += special;
+
+    // suppression des entités ambigue pour l'utilisateur (L, l, 1, o, O ...)
+    if (removeAmbigousItems) {
+      dictionnary = dictionnary
+          .split('')
+          .where((c) => !ambigousItems.contains(c))
+          .join('');
+    }
+
+    // test d'arguments
+    if (dictionnary.isEmpty) {
+      throw ArgumentError('must enable [number] or [letters] or [special]!');
+    }
+
+    // retour du mot de passe
+    final random = Random();
+    String password = List.generate(
+            length, (index) => dictionnary[random.nextInt(dictionnary.length)])
+        .join('');
+
+    // dernière opération
+    if (lowerCase) password = password.toLowerCase();
+    if (upperCase) password = password.toUpperCase();
+    return password;
+  }
+
+  ///
   /// Outil pour chiffrer une chaine de bytes
   ///
   static Uint8List encryptAESBytes(Uint8List body, [String? encryptAESKey]) {
     // récupération de la clef automatique si besoin
     encryptAESKey ??= ToolsConfigApp.preferences.getCurrentUserSecretKey();
+    if (encryptAESKey.length != 32) {
+      throw ArgumentError("must set a 32-length password");
+    }
 
     // configuration
     final key = encrypt.Key.fromUtf8(encryptAESKey);
@@ -267,6 +326,9 @@ class ToolsHelpers {
   static Uint8List decryptAESBytes(Uint8List body, [String? encryptAESKey]) {
     // récupération de la clef automatique si besoin
     encryptAESKey ??= ToolsConfigApp.preferences.getCurrentUserSecretKey();
+    if (encryptAESKey.length != 32) {
+      throw ArgumentError("must set a 32-length password");
+    }
 
     // configuration
     final key = encrypt.Key.fromUtf8(encryptAESKey);
@@ -293,18 +355,18 @@ class ToolsHelpers {
   /// Convertion d'un texte HTML en texte brut
   ///
   static String htmlToText(String html) {
-    throw Exception("Not implemented");
-    /*
-    if (html.isEmpty) {
-      return '';
-    }
+    // Remplacement des balises de saut de ligne par des retours explicites
+    html = html.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
+    html = html.replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n');
 
-    // suprresion des balises HTML
-    html_dom.Document document = html_parser.parse(html);
+    // Expression régulière pour supprimer toutes les autres balises HTML
+    final regex = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: false);
 
-    // Extraire le texte brut
-    return document.body?.text ?? '';
-    */
+    // Remplacement des balises restantes par une chaîne vide
+    final brut = html.replaceAll(regex, '');
+
+    // Nettoyage des espaces en trop
+    return brut.trim();
   }
 
   ///
@@ -340,10 +402,11 @@ class ToolsHelpers {
   ///
   static String textRemovePrefix(String text,
       {String removeText = "Exception: "}) {
+    text = text.trim();
     if (text.toLowerCase().startsWith(removeText.toLowerCase())) {
       text = text.substring(removeText.length);
     }
-    return text.trim();
+    return text;
   }
 
   // ---------------------------------------------------------------------------
@@ -500,6 +563,7 @@ class ToolsHelpers {
   static String formatTimeRemaining(
     DateTime futureDate, {
     bool showSeconds = true,
+    String daysLabel = "jours",
   }) {
     final now = DateTime.now();
     final difference = futureDate.difference(now);
@@ -516,7 +580,7 @@ class ToolsHelpers {
 
     // Formater la chaîne de caractères
     if (days > 0) {
-      return "$days jours, ${hours.toString().padLeft(2, '0')}:"
+      return "$days $daysLabel, ${hours.toString().padLeft(2, '0')}:"
           "${minutes.toString().padLeft(2, '0')}"
           "${(showSeconds) ? ':${seconds.toString().padLeft(2, '0')}' : ''}";
     } else {
