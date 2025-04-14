@@ -23,6 +23,15 @@ Future main() async {
   ///
   ToolsConfigApp.appName = appName;
   await ToolsConfigApp.initSettings(defaults: {
+    // -------------------------------------------------------------------------
+    // - Thème de l'application
+    // -------------------------------------------------------------------------
+    appThemeConfigKey: "Orange",
+    appThemeConfigDarkKey: false,
+
+    // -------------------------------------------------------------------------
+    // - Configuration de l'application
+    // -------------------------------------------------------------------------
     "mypassword": ToolsHelpers.generatePassword(
       length: 42,
       removeAmbigousItems: true,
@@ -55,6 +64,7 @@ Future main() async {
     }
 
     // divers
+    ToolsConfigApp.logger.i("Log: filepath: ${ToolsConfigApp.logger.pathname}");
     ToolsConfigApp.logger.i(
         "Config: Secret-Key: ${ToolsConfigApp.preferences.getCurrentUserSecretKey()}");
     ToolsConfigApp.logger.i(
@@ -239,7 +249,11 @@ class _MainAppState extends ConsumerState<MainApp> {
                   )}"),
                   Text(
                     "Network image demonstration",
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          // couleur plus prononcée (plus clair ou plus foncé)
+                          color: ToolsConfigApp.appPrimaryColor
+                              .slightlyContrastedColor(0.2),
+                        ),
                   ),
                 ],
               ),

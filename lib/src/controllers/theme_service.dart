@@ -209,13 +209,20 @@ class ToolsThemeApp extends ChangeNotifier {
 
     // si le thème n'est pas trouvé
     if (mytheme.isEmpty) {
-      mytheme = primaryColorsListAvailable.first;
-    }
+      // recherche du thème défini par défaut ou le premier cas échéant
+      mytheme = primaryColorsListAvailable.firstWhere(
+          (map) => map["desc"] == appThemeDefaultColors,
+          orElse: () => primaryColorsListAvailable.first);
 
-    // vraiment pas de thème
-    if (mytheme.isEmpty) {
-      throw Exception(
-          "[ToolsThemeApp] : theme \"$themeName\" not found in list!");
+      // vraiment pas de thème
+      if (mytheme.isEmpty) {
+        throw Exception(
+            "[ToolsThemeApp] : theme \"$themeName\" not found in list!");
+      }
+
+      // on affecte les préférences
+      currentThemeName = mytheme["desc"];
+      setTheme(currentThemeName);
     }
 
     // retour du thème
