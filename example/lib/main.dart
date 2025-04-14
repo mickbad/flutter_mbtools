@@ -22,7 +22,13 @@ Future main() async {
   /// Configurations init
   ///
   ToolsConfigApp.appName = appName;
-  await ToolsConfigApp.initSettings();
+  await ToolsConfigApp.initSettings(defaults: {
+    "mypassword": ToolsHelpers.generatePassword(
+      length: 42,
+      removeAmbigousItems: true,
+      upperCase: true,
+    ),
+  });
 
   // ajustements supplémentaires
   ToolsConfigApp.logger.level = LogLevel.trace;
@@ -47,6 +53,12 @@ Future main() async {
       mbNotifications t = mbNotifications("mipmap/ic_launcher");
       await t.sendBasicMessage(appName, "It's Ok for me!", "payload");
     }
+
+    // divers
+    ToolsConfigApp.logger.i(
+        "Config: Secret-Key: ${ToolsConfigApp.preferences.getCurrentUserSecretKey()}");
+    ToolsConfigApp.logger.i(
+        "Config: mypassword: ${ToolsConfigApp.preferences.get("mypassword")}");
   });
 
   ///
@@ -214,6 +226,23 @@ class _MainAppState extends ConsumerState<MainApp> {
                 ),
                 const Text("3", style: TextStyle(color: Colors.white)),
               ],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 30,
+                children: [
+                  Image.network(
+                      "https://placehold.co/1600x600/0f789c/E7E7E7.png?text=mbTools+:+${ToolsHelpers.generatePassword(
+                    length: 12,
+                    upperCase: true,
+                    removeAmbigousItems: true,
+                  )}"),
+                  Text(
+                    "Network image demonstration",
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+              ),
             );
           },
           icon: Icon(
@@ -471,11 +500,11 @@ class _MainAppState extends ConsumerState<MainApp> {
           title: "mon titre 1",
           titleStyle: TextStyle(color: ToolsConfigApp.appWhiteColor),
           imageColorBend: Colors.yellowAccent,
-          trailing: Icon(
+          leading: Icon(
             Icons.home,
             color: ToolsConfigApp.appInvertedColor,
           ),
-          leading: Icon(
+          trailing: Icon(
             Icons.arrow_forward,
             color: ToolsConfigApp.appInvertedColor,
           ),
@@ -490,11 +519,11 @@ class _MainAppState extends ConsumerState<MainApp> {
           title: "mon titre 2",
           titleStyle: TextStyle(color: ToolsConfigApp.appWhiteColor),
           imageColorBend: Colors.red,
-          trailing: Icon(
+          leading: Icon(
             Icons.home,
             color: ToolsConfigApp.appInvertedColor,
           ),
-          leading: Icon(
+          trailing: Icon(
             Icons.arrow_forward,
             color: ToolsConfigApp.appInvertedColor,
           ),
@@ -513,11 +542,11 @@ class _MainAppState extends ConsumerState<MainApp> {
           title: "Thème : $currentThemeName",
           titleStyle: TextStyle(color: ToolsConfigApp.appWhiteColor),
           imageColorBend: ToolsConfigApp.appPrimaryColor.withValues(alpha: 0.3),
-          trailing: Icon(
+          leading: Icon(
             Icons.colorize,
             color: ToolsConfigApp.appPrimaryColor,
           ),
-          leading: Container(
+          trailing: Container(
             width: 30,
             height: 30,
             decoration: BoxDecoration(
