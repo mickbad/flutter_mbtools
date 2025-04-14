@@ -477,6 +477,40 @@ class _MainAppState extends ConsumerState<MainApp> {
             color: ToolsConfigApp.appYellowColor,
           ),
         ),
+
+        // affichage du File-picker
+        IconButton(
+          onPressed: () async {
+            SoundFx.playUserDisconnected();
+
+            // lecture des fichiers
+            final files = await ToolsHelpers.userSimpleLoadFilesDialog(
+              allowMultiple: true,
+            );
+            for (final Map<String, dynamic> file in files) {
+              ToolsConfigApp.logger.i("- File ${file["name"]}");
+              ToolsConfigApp.logger
+                  .i("  size: ${file["size"]} octets, ${file["size_human"]}");
+              ToolsConfigApp.logger.i("  path: ${file["path"]}");
+              ToolsConfigApp.logger.i("  extension: ${file["extension"]}");
+              ToolsConfigApp.logger.i("  xfile: ${file["xfile"]}");
+              ToolsConfigApp.logger.i("  mime-type: ${file["xfile"].mimeType}");
+            }
+
+            // écriture
+            final fileoutput = await ToolsHelpers.userSimpleSaveFileDialog(
+              fileName: "output.wav",
+              lockParentWindow: true,
+            );
+            if (fileoutput != null) {
+              ToolsConfigApp.logger.i("- File output: $fileoutput");
+            }
+          },
+          icon: Icon(
+            Icons.arrow_circle_up_outlined,
+            color: ToolsConfigApp.appBlueColor,
+          ),
+        ),
       ],
       topActions: <Widget>[
         IconButton(

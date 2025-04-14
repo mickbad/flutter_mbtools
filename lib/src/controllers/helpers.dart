@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:another_flushbar/flushbar.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mbtools/mbtools.dart';
@@ -705,5 +706,141 @@ class ToolsHelpers {
             child: child,
           ),
         ));
+  }
+
+  // ---------------------------------------------------------------------------
+  // - Gestion de fichiers
+  // ---------------------------------------------------------------------------
+
+  ///
+  /// Détermine une taille de fichier en humain
+  ///
+  static String humanFileSize(
+    int size, {
+    List<String> sizeLabels = const ['octets', 'Ko', 'Mo', 'Go', 'To'],
+  }) {
+    // les unités retenus
+    if (sizeLabels.isEmpty) {
+      sizeLabels = const ['octets', 'Ko', 'Mo', 'Go', 'To'];
+    }
+
+    // Conversion basée sur le système binaire (1024)
+    const int tailleUnite = 1024;
+
+    double sizeDbl = size.toDouble();
+    int indexUnite = 0;
+
+    while (sizeDbl >= tailleUnite && indexUnite < sizeLabels.length - 1) {
+      sizeDbl /= tailleUnite;
+      indexUnite++;
+    }
+
+    // Formattage du résultat avec 2 décimales
+    return '${sizeDbl.toStringAsFixed(2)} ${sizeLabels[indexUnite]}';
+  }
+
+  ///
+  /// Demande de sauvegarde d'un fichier
+  ///
+  /// [dialogTitle] can be set to display a custom title on desktop platforms.
+  /// Not supported on macOS.
+  ///
+  /// [fileName] can be set to a non-empty string to provide a default file
+  /// name. Throws an `IllegalCharacterInFileNameException` under Windows if the
+  /// given [fileName] contains forbidden characters.
+  ///
+  /// [initialDirectory] can be optionally set to an absolute path to specify
+  /// where the dialog should open. Only supported on Linux, macOS, and Windows.
+  /// On macOS the home directory shortcut (~/) is not necessary and passing it will be ignored.
+  /// On macOS if the [initialDirectory] is invalid the user directory or previously valid directory
+  /// will be used.
+  ///
+  /// The file type filter [type] defaults to [FileType.any]. Optionally,
+  /// [allowedExtensions] might be provided (e.g. `[pdf, svg, jpg]`). Both
+  /// parameters are just a proposal to the user as the save file dialog does
+  /// not enforce these restrictions.
+  ///
+  /// If [lockParentWindow] is set, the child window (file picker window) will
+  /// stay in front of the Flutter window until it is closed (like a modal
+  /// window). This parameter works only on Windows desktop.
+  ///
+  /// Returns `null` if aborted. Returns a [Future<String?>] which resolves to
+  /// the absolute path of the selected file, if the user selected a file.
+  ///
+  static Future<String?> userSimpleSaveFileDialog({
+    String? dialogTitle,
+    String? fileName,
+    String? initialDirectory,
+    List<String>? allowedExtensions,
+    bool lockParentWindow = false,
+  }) async {
+    return await FilePicker.platform.saveFile(
+      dialogTitle: dialogTitle ?? 'Please select an output file:',
+      fileName: fileName != null ? p.basename(fileName) : null,
+      initialDirectory: initialDirectory,
+      type: (allowedExtensions != null) ? FileType.custom : FileType.any,
+      allowedExtensions: allowedExtensions,
+      lockParentWindow: lockParentWindow,
+    );
+  }
+
+  ///
+  /// Demande de chargement d'un ou plusieurs fichiers
+  ///
+  /// Pour MacOS vérifier le fichier {DebugProfile|Release}.entitlements :
+  ///   <key>com.apple.security.files.user-selected.read-write</key>
+  ///   <true/>
+  ///
+  /// Pour Android, il faut ajouter les droits and le manifest
+  ///   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  ///   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  ///
+  /// Pour iOS, dans le fichier Info.plist
+  ///   <key>NSPhotoLibraryUsageDescription</key>
+  ///   <string>Nous avons besoin d'accéder à vos fichiers.</string>
+  ///   <key>NSDocumentUsageDescription</key>
+  ///   <string>Accès aux fichiers requis pour l'application.</string>
+  ///
+  static Future<List<Map<String, dynamic>>> userSimpleLoadFilesDialog({
+    String? dialogTitle,
+    String? initialDirectory,
+    List<String>? allowedExtensions,
+    bool allowMultiple = false,
+    bool includeResultBytes = false,
+    List<String> sizeLabels = const ['octets', 'Ko', 'Mo', 'Go', 'To'],
+  }) async {
+    final result = await FilePicker.platform.pickFiles(
+      dialogTitle: dialogTitle ?? 'Please select an input file:',
+      initialDirectory: initialDirectory,
+      type: (allowedExtensions != null) ? FileType.custom : FileType.any,
+      allowedExtensions: allowedExtensions,
+      allowMultiple: allowMultiple,
+    );
+
+    if (result == null) {
+      return [];
+    }
+
+    // liste des fichiers
+    final List<Map<String, dynamic>> output = [];
+    for (final filename in result.files) {
+      final Map<String, dynamic> data = {
+        "name": filename.name,
+        "path": filename.path,
+        "size": filename.size,
+        "size_human": humanFileSize(filename.size, sizeLabels: sizeLabels),
+        "extension_real": filename.extension,
+        "extension": filename.extension?.toLowerCase() ?? "",
+        "xfile": filename.xFile,
+      };
+
+      if (includeResultBytes) {
+        data["bytes"] = filename.bytes;
+      }
+
+      output.add(data);
+    }
+
+    return output;
   }
 }
