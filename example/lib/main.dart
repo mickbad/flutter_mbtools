@@ -46,17 +46,18 @@ Future main() async {
   /// Configuration des notifications desktop
   ///
   await DesktopNotifications.initNotificationSystem();
-  Future.delayed(const Duration(seconds: 10), () async {
+  Future.delayed(const Duration(seconds: 5), () async {
     // affichage d'une notification système
     ToolsConfigApp.logger.i("User show DesktopNotifications!");
 
     if (ToolsConfigApp.isDesktopApplication) {
       DesktopNotifications.displayNotification(
         title: appName,
-        body: "It's Ok for me!",
+        body: "It's Ok for me for 3 seconds!",
         onNotificationClick: () {
           ToolsConfigApp.logger.i("User click on DesktopNotifications!");
         },
+        timeout: const Duration(seconds: 3),
       );
     } else {
       mbNotifications t = mbNotifications("mipmap/ic_launcher");

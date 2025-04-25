@@ -124,14 +124,14 @@ class DesktopNotifications {
     _notificationsList.add(notification);
 
     // affichage différé
-    waitBeforeShow ??= const Duration(milliseconds: 100);
-    Timer(waitBeforeShow, () {
+    waitBeforeShow ??= Duration.zero;
+    Timer(waitBeforeShow, () async {
       // log
       ToolsConfigApp.logger
           .t("[Notification #${notification.identifier}] call show()");
 
       // affichage
-      notification.show();
+      await notification.show();
 
       // gestion du timeout
       if (timeout != null) {

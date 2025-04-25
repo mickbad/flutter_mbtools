@@ -472,20 +472,20 @@ class ToolsConfigApp {
   ///
   /// Activation de la mise en veille du device
   ///
-  static void enableDeviceScreenSaver() {
+  static Future<void> enableDeviceScreenSaver() async {
     // déblocage de la mise en veille du device
-    WakelockPlus.disable();
+    await WakelockPlus.disable();
     isScreenSaverBlock = false;
-    logger.t("[AppDefaultDesign] débloquage de la mise en veille du device");
+    logger.t("[mbTools] débloquage de la mise en veille du device");
   }
 
   ///
   /// Désactivation de la mise en veille du device
   ///
-  static void disableDeviceScreenSaver() {
+  static Future<void> disableDeviceScreenSaver() async {
     // blocage de la mise en veille du device
-    WakelockPlus.enable();
+    await WakelockPlus.enable();
     isScreenSaverBlock = true;
-    logger.t("[AppDefaultDesign] blocage de la mise en veille du device");
+    logger.t("[mbTools] blocage de la mise en veille du device");
   }
 }
