@@ -176,31 +176,63 @@ class ToolsHelpers {
   ///
   /// Procédure de téléchargement d'une ressouce sur internet et sauvegarde dans
   /// un fichier en local
-  /// [encrypt] : vrai pour que le fichier soit crypté après la lecture
+  /// [encrypt] : vrai pour que le fichier soit chiffré après la lecture
   ///
   static Future<String?> downloadUrlToFile(
     String url,
     String pathname, {
+    String method = 'GET',
+    Map<String, String>? headers,
+    Map<String, String>? formData,
+    dynamic body,
     bool encrypt = false,
     String? encryptAESKey,
   }) async {
     try {
-      // Envoyer une requête GET à l'URL
-      final response = await http.get(Uri.parse(url));
+      http.Response response;
 
-      // Créer le fichier
-      final file = File(pathname);
-
-      // lecture des données
-      Uint8List body = response.bodyBytes;
-
-      // chiffrement?
-      if (encrypt) {
-        body = encryptAESBytes(body, encryptAESKey);
+      // Vérification de la méthode
+      final methodUpper = method.toUpperCase();
+      if (methodUpper != 'GET' && methodUpper != 'POST') {
+        throw ArgumentError('Method must be GET or POST');
       }
 
-      // Écrire les données de la réponse dans le fichier
-      await file.writeAsBytes(body, flush: true);
+      // Préparation de la requête
+      if (methodUpper == 'GET') {
+        response = await http.get(Uri.parse(url), headers: headers);
+      } else {
+        if (formData != null) {
+          headers ??= {};
+          headers['Content-Type'] = 'application/x-www-form-urlencoded';
+          response = await http.post(
+            Uri.parse(url),
+            headers: headers,
+            body: formData,
+          );
+        } else {
+          response = await http.post(
+            Uri.parse(url),
+            headers: headers,
+            body: body,
+          );
+        }
+      }
+
+      // Vérifier le statut HTTP
+      if (response.statusCode != 200) return null;
+
+      // Lire les données
+      Uint8List bodyBytes = response.bodyBytes;
+
+      // Chiffrement si nécessaire
+      if (encrypt) {
+        bodyBytes = encryptAESBytes(bodyBytes, encryptAESKey);
+      }
+
+      // Écrire le fichier
+      final file = File(pathname);
+      await file.writeAsBytes(bodyBytes, flush: true);
+
       return file.path;
     } catch (e) {
       return null;
