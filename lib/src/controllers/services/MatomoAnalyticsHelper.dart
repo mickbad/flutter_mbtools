@@ -108,8 +108,9 @@ class MatomoAnalyticsHelper {
     ToolsConfigApp.preferences.set(_consentKey, value.toString());
     if (value) {
       // check
-      assert(_trackerUrl.isNotEmpty, "[matomoUrl] must be set");
-      assert(_siteId.isNotEmpty, "[matomoSiteId] must be set");
+      if (!_isPluginReady) {
+        return;
+      }
 
       await MatomoTracker.instance.initialize(
         siteId: _siteId,
@@ -143,6 +144,10 @@ class MatomoAnalyticsHelper {
   /// Track a screen
   ///
   static void trackPageName(String actionName, {String? pagePath, }) async {
+    if (!_isPluginReady) {
+      return;
+    }
+
     if (!MatomoTracker.instance.initialized) {
       ToolsConfigApp.logger.w("Matomo service not initialized");
       return;
@@ -167,6 +172,10 @@ class MatomoAnalyticsHelper {
     String? name,
     num? value,
   }) {
+    if (!_isPluginReady) {
+      return;
+    }
+
     if (!MatomoTracker.instance.initialized) {
       ToolsConfigApp.logger.w("Matomo service not initialized");
       return;
@@ -195,6 +204,10 @@ class MatomoAnalyticsHelper {
   /// Track device and environment info
   /// 
   static void trackDeviceInfo() {
+    if (!_isPluginReady) {
+      return;
+    }
+
     if (!MatomoTracker.instance.initialized) {
       ToolsConfigApp.logger.w("Matomo service not initialized");
       return;
