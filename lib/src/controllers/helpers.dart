@@ -106,6 +106,57 @@ class ToolsHelpers {
   }
 
   ///
+  /// Récupération du model du device courant (système + modèle device)
+  ///
+  static Future<String?> getUniqueDeviceModel() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String? identifier;
+    String? model;
+    String? type;
+
+    try {
+      if (Platform.isAndroid) {
+        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        identifier = androidInfo.id;
+        model = androidInfo.model;
+        type = "Android";
+      } else if (Platform.isIOS) {
+        IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+        identifier = iosInfo.identifierForVendor;
+        type = "iOS";
+        model = iosInfo.modelName;
+      } else if (Platform.isLinux) {
+        LinuxDeviceInfo linuxInfo = await deviceInfo.linuxInfo;
+        identifier = linuxInfo.machineId;
+        type = "Linux";
+        model = linuxInfo.prettyName;
+      } else if (Platform.isMacOS) {
+        MacOsDeviceInfo macOsInfo = await deviceInfo.macOsInfo;
+        identifier = macOsInfo.systemGUID;
+        type = "macOS";
+        model = macOsInfo.modelName;
+      } else if (Platform.isWindows) {
+        WindowsDeviceInfo windowsInfo = await deviceInfo.windowsInfo;
+        identifier = windowsInfo.deviceId;
+        type = "Windows";
+        model = windowsInfo.productName;
+      } else if (kIsWeb) {
+        WebBrowserInfo webInfo = await deviceInfo.webBrowserInfo;
+        identifier = webInfo.vendor! +
+            webInfo.userAgent! +
+            webInfo.hardwareConcurrency.toString();
+        type = "Browser";
+        model = webInfo.vendor;
+      }
+    } catch (e) {
+      return null;
+    }
+
+    // return "$type;$model;$identifier";
+    return "$type;$model";
+  }
+
+  ///
   /// Récupération des informations de l'appareil IOS
   ///
   static Future<(String, String)> getLocalIOSDeviceInfo() async {

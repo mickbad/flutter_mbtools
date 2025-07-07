@@ -18,6 +18,7 @@ Future<Post> fetchPost(
   String route, {
   Map<String, String>? options,
   Map<String, String>? postBody,
+  Map<String, String>? headers,
   bool cacheResults = true,
   bool resetCache = false,
   bool isApiKeyHeader = true,
@@ -46,13 +47,17 @@ Future<Post> fetchPost(
 
   // gestion du POST
   postBody ??= {};
-  Map<String, String> headers = {};
-  headers["user-agent"] = await getHeaderUserAgent();
-  headers["Access-Control-Allow-Origin"] = "*";
-  headers["Accept"] = "*/*";
+  Map<String, String> localHeaders = {};
+  localHeaders["user-agent"] = await getHeaderUserAgent();
+  localHeaders["Access-Control-Allow-Origin"] = "*";
+  localHeaders["Accept"] = "*/*";
 
   if (isApiKeyHeader) {
-    headers["x-api-key"] = ToolsConfigApp.appApiKey;
+    localHeaders["x-api-key"] = ToolsConfigApp.appApiKey;
+  }
+
+  if (headers != null && headers.isNotEmpty) {
+    localHeaders.addAll(headers);
   }
 
   // Gestion du cache
@@ -89,18 +94,18 @@ Future<Post> fetchPost(
     try {
       switch (type) {
         case RequestType.get:
-          response = await http.get(completeUrl, headers: headers);
+          response = await http.get(completeUrl, headers: localHeaders);
           break;
         case RequestType.post:
           response =
-              await http.post(completeUrl, body: postBody, headers: headers);
+              await http.post(completeUrl, body: postBody, headers: localHeaders);
           break;
         case RequestType.put:
           response =
-              await http.put(completeUrl, body: postBody, headers: headers);
+              await http.put(completeUrl, body: postBody, headers: localHeaders);
           break;
         case RequestType.delete:
-          response = await http.delete(completeUrl, headers: headers);
+          response = await http.delete(completeUrl, headers: localHeaders);
           break;
       }
 
