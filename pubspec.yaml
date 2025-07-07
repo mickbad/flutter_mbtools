@@ -1,6 +1,6 @@
 name: mbtools
 description: "Ensemble d'outils dart/flutter."
-version: 1.2.5
+version: 1.2.6
 homepage: https://www.ricochets.dev
 
 environment:
@@ -25,6 +25,9 @@ dependencies:
   pref: ^2.8.0
   encrypt: ^5.0.3
   # html: ^0.15.5
+
+  # gestion du tracking
+  matomo_tracker: ^6.0.0
 
   # gestion des widgets
   flutter_animate: ^4.5.2
