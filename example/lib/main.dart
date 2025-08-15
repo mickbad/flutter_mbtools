@@ -256,6 +256,25 @@ class _MainAppState extends ConsumerState<MainApp> {
                               .slightlyContrastedColor(0.2),
                         ),
                   ),
+
+                  ///
+                  /// Markdown View
+                  ///
+                  const CustomMarkdownText(
+                    text: '''
+# Title 1
+
+## Title 2
+
+This is a paragraph.
+
+- list one
+- list two
+- list three
+
+[https://github.com/mickbad](https://github.com/mickbad)
+                    ''',
+                  ),
                 ],
               ),
             );
