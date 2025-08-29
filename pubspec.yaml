@@ -1,6 +1,6 @@
 name: mbtools
 description: "Ensemble d'outils dart/flutter."
-version: 1.2.8
+version: 1.2.9
 homepage: https://www.ricochets.dev
 
 environment:
@@ -37,7 +37,7 @@ dependencies:
   flutter_animate: ^4.5.2
   motion: ^2.0.1
   glassmorphism_ui: ^0.3.0
-  flutter_slidable: ^4.0.0
+  flutter_slidable: ^4.0.1
 
   # gestion de la fenêtre
   window_manager: ^0.5.1
@@ -57,12 +57,12 @@ dependencies:
   fetch_client: ^1.1.4
 
   # notifications
-  flutter_local_notifications: ^19.4.0
+  flutter_local_notifications: ^19.4.1
   local_notifier: ^0.1.6
 
   # outils design/utilitaire
   share_plus: ^11.1.0
-  file_picker: ^10.3.1
+  file_picker: ^10.3.2
   flutter_file_dialog: ^3.0.2
   slug_it: ^0.0.1
   pasteboard:

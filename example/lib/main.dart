@@ -42,6 +42,30 @@ Future main() async {
   // ajustements supplémentaires
   ToolsConfigApp.logger.level = LogLevel.trace;
 
+  // tests prefs
+  const String keyStore = "__oopslala";
+  const String keyStoreString = "__oopslala_string";
+
+  // ToolsConfigApp.preferences.set(keyStore); // to remove it
+  ToolsConfigApp.logger.i("Test prefs: ${ToolsConfigApp.preferences.get(keyStore)}");
+  ToolsConfigApp.logger.i("Test prefs type: ${ToolsConfigApp.preferences.getStringList(keyStore).runtimeType}");
+
+  List<String> purchases = ToolsConfigApp.preferences.getStringList(keyStore) ?? [];
+  ToolsConfigApp.logger.i("1: purchases($keyStore): $purchases");
+
+  String objectId = "Test_${DateTime.now().millisecondsSinceEpoch}";
+  purchases.add(objectId);
+  ToolsConfigApp.preferences.set(keyStoreString, objectId);
+
+  String objectId2 = "Test2_${DateTime.now().millisecondsSinceEpoch}";
+  purchases.add(objectId2);
+
+  ToolsConfigApp.preferences.set(keyStore, purchases);
+
+  purchases = ToolsConfigApp.preferences.getStringList(keyStore) ?? [];
+  ToolsConfigApp.logger.i("2: purchases($keyStore): $purchases / first: ${purchases.first}");
+  ToolsConfigApp.logger.i("3: object($keyStoreString): ${ToolsConfigApp.preferences.get(keyStoreString)}");
+
   ///
   /// Configuration des notifications desktop
   ///

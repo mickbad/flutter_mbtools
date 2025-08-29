@@ -128,8 +128,16 @@ class SettingsService {
     return value;
   }
 
-  FutureOr<bool> set<T>(String key, T value) async {
-    return _prefs?.set(key, value) ?? false;
+  List<String>? getStringList(String key, [List<String>? defaultValue]) {
+    List<String>? value = _prefs?.getStringList(key);
+    if (value == null && defaultValue != null) {
+      return defaultValue;
+    }
+    return value;
+  }
+
+  FutureOr<bool> set<T>(String key, [T? value]) async {
+    return await _prefs?.put(key, value) ?? false;
   }
 
   // ---------------------------------------------------------------------------
