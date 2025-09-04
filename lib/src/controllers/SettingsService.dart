@@ -129,11 +129,15 @@ class SettingsService {
   }
 
   List<String>? getStringList(String key, [List<String>? defaultValue]) {
-    List<String>? value = _prefs?.getStringList(key);
-    if (value == null && defaultValue != null) {
+    try {
+      List<String>? value = _prefs?.getStringList(key);
+      if (value == null && defaultValue != null) {
+        return defaultValue;
+      }
+      return value;
+    } catch(e) {
       return defaultValue;
     }
-    return value;
   }
 
   FutureOr<bool> set<T>(String key, [T? value]) async {
