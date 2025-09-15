@@ -2,12 +2,14 @@
 /// Fonctions utilitaires
 ///
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:mbtools/mbtools.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,6 +27,11 @@ import 'package:device_info_plus/device_info_plus.dart';
 /// Outils helpers
 ///
 class ToolsHelpers {
+  ///
+  /// Récupération du répertoire d'exécution du logiciel
+  ///
+  static String getAppDirectory() => File(Platform.resolvedExecutable).parent.path;
+
   ///
   /// Tools : get real pathname
   ///
@@ -62,6 +69,48 @@ class ToolsHelpers {
       myPath = myPath.replaceAll("/", "\\");
     }
     return myPath;
+  }
+
+  ///
+  /// convertion en bsae64 d'un fichier
+  ///
+  static Future<String?> encodeFileToBase64(String filePath, [String? assetsPath]) async {
+    try {
+      List<int> fileBytes;
+
+      if (filePath.startsWith(assetsPath ?? 'assets/')) {
+        // Chargement du fichier depuis les assets
+        ByteData byteData = await rootBundle.load(filePath);
+        fileBytes = byteData.buffer.asUint8List();
+      } else {
+        // Chargement du fichier depuis le système de fichiers
+        File file = File(filePath);
+        if (!file.existsSync()) return null;
+        fileBytes = await file.readAsBytes();
+      }
+
+      return base64Encode(fileBytes);
+    } catch (e) {
+      ToolsConfigApp.logger.e("Erreur lors de l'encodage en Base64: $e");
+      return null;
+    }
+  }
+
+  ///
+  /// Nettoyage d'un nom de fichier
+  ///
+  static String sanitizeFileName(String fileName) {
+    // Liste des caractères interdits sur Android et iOS
+    final RegExp forbiddenChars = RegExp(r'[\/:*?"<>|\\\x00]');
+
+    // Remplacement des caractères interdits par un espace
+    String sanitizedName = fileName.replaceAll(forbiddenChars, ' ');
+
+    // Suppression des espaces multiples
+    sanitizedName = sanitizedName.replaceAll(RegExp(r'\s+'), ' ');
+
+    // Suppression des espaces en début et fin de chaîne
+    return sanitizedName.trim();
   }
 
   // ---------------------------------------------------------------------------

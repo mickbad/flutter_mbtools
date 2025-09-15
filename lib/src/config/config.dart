@@ -63,14 +63,24 @@ class ToolsConfigApp {
   static Color appThirdColor = const Color(0xFFD25B65);
   static Color appInvertedColor = const Color(0xFFEFEFEF);
   static Color appInactiveColor = const Color(0x766B5F5F);
+
   static Color appErrorColor = const Color(0xFFD32F2F);
   static Color appAlertColor = const Color(0xFFB01D1D);
+  static Color appSuccessColor = const Color(0xFF409143);
+  static Color appWarningColor = const Color(0xFFBF9A22);
+  static Color appInfoColor = const Color(0xFF19BFBF);
+
+  static Color appBlackColor = const Color(0xFF1B1A1A);
   static Color appWhiteColor = const Color(0xFFE7E7E7);
   static Color appRedColor = const Color(0xFFD32F2F);
   static Color appYellowColor = const Color(0xFFFFCA28);
   static Color appBlueColor = const Color(0xFF5B8AD2);
   static Color appGreenColor = const Color(0xFF43A047);
   static Color appGreyColor = const Color(0xFF6B5F5F);
+  static Color appPurpleColor = const Color(0xFFA020F0);
+  static Color appMagentaColor = const Color(0xFFCD1BCD);
+  static Color appCyanColor = const Color(0xFF19BFBF);
+  static Color appOrangeColor = const Color(0xFFCF740D);
 
   // ---------------------------------------------------------------------------
   ///

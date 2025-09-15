@@ -245,10 +245,24 @@ class MatomoAnalyticsHelper {
   ///
   /// Returns a widget to show the consent banner
   ///
-  static Widget buildConsentBanner({
+  Widget buildConsentBanner({
     required VoidCallback onConsentGiven,
-    String labelUserDisplay = 'Nous utilisons Matomo pour améliorer l\'application. Aucune donnée personnelle n\'est collectée.',
+    String labelUserDisplay = 'Nous utilisons Matomo pour améliorer l\'application.\nAucune donnée personnelle n\'est collectée.',
     String labelButtonAccept = 'J\'accepte',
+
+    // design
+    Color? backgroundColor,
+    Color? borderColor,
+    double borderRadius = 12,
+    bool hasShadow = true,
+    Color shadowColor = Colors.black26,
+    double shadowBlurRadius = 10,
+    Offset? shadowOffset = const Offset(0, 5),
+    Color? buttonColor,
+    Color? buttonTextColor,
+    double? buttonFontSize,
+    Color? textColor,
+    double? textFontSize,
   }) {
     // return FutureBuilder<bool>(
     //   future: hasConsent(),
@@ -268,15 +282,32 @@ class MatomoAnalyticsHelper {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        color: Colors.grey.shade200,
         padding: const EdgeInsets.all(16),
         margin: const EdgeInsets.all(12),
+
+        decoration: BoxDecoration(
+          color: backgroundColor ?? Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(borderRadius),
+          border: borderColor == null ? null : Border.all(color: borderColor),
+          boxShadow: hasShadow ? [
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: shadowBlurRadius,
+              offset: shadowOffset ?? const Offset(0, 5),
+            ),
+          ] : null,
+        ),
+
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               labelUserDisplay,
               textAlign: TextAlign.center,
+              style: TextStyle(
+                color: textColor,
+                fontSize: textFontSize,
+              ),
             ),
             const SizedBox(height: 8),
             ElevatedButton(
@@ -284,11 +315,21 @@ class MatomoAnalyticsHelper {
                 await setConsentGiven(true);
                 onConsentGiven();
               },
-              child: Text(labelButtonAccept),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: buttonColor,
+              ),
+              child: Text(
+                labelButtonAccept,
+                style: TextStyle(
+                  color: buttonTextColor,
+                  fontSize: buttonFontSize,
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
 }
