@@ -245,7 +245,7 @@ class MatomoAnalyticsHelper {
   ///
   /// Returns a widget to show the consent banner
   ///
-  Widget buildConsentBanner({
+  static Widget buildConsentBanner({
     required VoidCallback onConsentGiven,
     String labelUserDisplay = 'Nous utilisons Matomo pour améliorer l\'application.\nAucune donnée personnelle n\'est collectée.',
     String labelButtonAccept = 'J\'accepte',
