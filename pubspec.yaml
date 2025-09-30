@@ -13,11 +13,11 @@ dependencies:
 
   # gestion de l'application
   connectivity_plus: ^7.0.0
-  package_info_plus: ^8.3.1
-  device_info_plus: ^11.5.0
+  package_info_plus: ^9.0.0
+  device_info_plus: ^12.1.0
   path_provider: ^2.1.5
   markdown: ^7.3.0
-  wakelock_plus: ^1.3.2
+  wakelock_plus: ^1.4.0
 
   # markdown
   # STOPPED : TODO Change this very soon
@@ -31,13 +31,13 @@ dependencies:
   # html: ^0.15.5
 
   # gestion du tracking
-  matomo_tracker: ^6.0.0
+  matomo_tracker: ^6.1.0
 
   # gestion des widgets
   flutter_animate: ^4.5.2
   motion: ^2.0.1
   glassmorphism_ui: ^0.3.0
-  flutter_slidable: ^4.0.1
+  flutter_slidable: ^4.0.3
 
   # gestion de la fenêtre
   window_manager: ^0.5.1
