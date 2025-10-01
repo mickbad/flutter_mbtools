@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -19,17 +20,39 @@ Future<Post> fetchPost(
   Map<String, String>? options,
   Map<String, String>? postBody,
   Map<String, String>? headers,
+  String? apiURL,
+  String? language,
   bool cacheResults = true,
   bool resetCache = false,
   bool isApiKeyHeader = true,
+  bool? isGzipResponse,
 }) async {
-  // récupération de l'adresse de l'api customisé ou pas
-  // bool isGzipResponse = false;
+  // Etablissement de l'adresse de l'api avec l'utilisation du défaut
+  apiURL ??= ToolsConfigApp.appApiURL;
+
+  // activation d'une langage de réponse
+  if (language != null) {
+    // création si nécessaire
+    options ??= {};
+
+    // ajout de l'api key
+    options["language"] = language;
+  }
+
+  // activation d'une réponse en GZIP
+  isGzipResponse ??= ToolsConfigApp.appApiGzip;
+  if (isGzipResponse) {
+    // création si nécessaire
+    options ??= {};
+
+    // ajout de l'api key
+    options["gzip"] = "true";
+  }
 
   // variables
   late http.Response response;
   bool isCachedResponse = false;
-  String _completeUrl = "${ToolsConfigApp.appApiURL}$route";
+  String _completeUrl = "$apiURL$route";
 
   // gestion de la clef automatique dans querystring si demandé
   if (!isApiKeyHeader) {
@@ -133,16 +156,17 @@ Future<Post> fetchPost(
   try {
     // décompression des données si nécessaire
     String responseQuery;
-    /*
     if (isGzipResponse) {
       // décompression
       final data = GZipCodec().decode(response.bodyBytes);
+
       // affectation
       responseQuery = utf8.decode(data, allowMalformed: true);
     }
-    else*/
-    // récupération des données sans compression
-    responseQuery = response.body;
+    else {
+      // récupération des données sans compression
+      responseQuery = response.body;
+    }
 
     // lecture des données
     return Post.fromJson(json.decode(responseQuery), response.statusCode);

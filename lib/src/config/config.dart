@@ -93,6 +93,9 @@ class ToolsConfigApp {
   // url de l'api de l'application
   static String appApiURL = "http://localhost:8000/api";
 
+  // utilisation de l'api gzip (demande de réponse en gzip)
+  static bool appApiGzip = false;
+
   // durée maximum du cache api
   static double appApiMaxDurationCacheSeconds = 5 * 60;
 

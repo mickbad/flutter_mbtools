@@ -1,6 +1,6 @@
 name: mbtools
 description: "Ensemble d'outils dart/flutter."
-version: 1.2.11+1
+version: 1.2.12+1
 homepage: https://www.ricochets.dev
 
 environment:
