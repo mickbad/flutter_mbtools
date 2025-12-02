@@ -8,6 +8,7 @@ import 'dart:math';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -16,12 +17,20 @@ import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:path/path.dart' as p;
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:toastification/toastification.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:device_info_plus/device_info_plus.dart';
 // import 'package:html/parser.dart' as html_parser;
 // import 'package:html/dom.dart' as html_dom;
+
+///
+/// Enumération des alertes
+///
+enum ToastFlashType { success, error, warning, info }
+
+enum ToastFlashPosition { top, bottom, center }
 
 ///
 /// Outils helpers
@@ -72,7 +81,7 @@ class ToolsHelpers {
   }
 
   ///
-  /// convertion en bsae64 d'un fichier
+  /// convertion en bse64 d'un fichier
   ///
   static Future<String?> encodeFileToBase64(String filePath, [String? assetsPath]) async {
     try {
@@ -542,6 +551,165 @@ class ToolsHelpers {
     return text;
   }
 
+  ///
+  /// Fonction de récupération d'un élément aléatoire depuis une liste
+  ///
+  static T getRandomElement<T>(List<T> list) {
+    if (list.isEmpty) {
+      throw Exception('empty list!');
+    }
+    final random = Random();
+    return list[random.nextInt(list.length)];
+  }
+
+  ///
+  /// Fonction de normalisation d'un texte (sans accent et miniscule)
+  ///
+  static String normalize(String input) {
+    final str = input.toLowerCase().trim();
+
+    const accentMap = {
+      'a': 'àâäãá',
+      'e': 'éèêë',
+      'i': 'îïìí',
+      'o': 'ôöòóõ',
+      'u': 'ûüùú',
+      'c': 'ç',
+    };
+
+    String out = str;
+    accentMap.forEach((key, accents) {
+      out = out.replaceAll(RegExp('[$accents]'), key);
+    });
+
+    return out.replaceAll(RegExp(r"\s+"), " ");
+  }
+
+  ///
+  /// Recherche complète avec scoring (tolérance aux fautes et à la case)
+  ///
+  /// ✅ Exemple 1 : Utilisation avec des champs d'un objet
+  ///
+  /// listing = fuzzySearch(
+  ///   query: value,
+  ///   items: widget.list,
+  ///   fieldExtractor: (e) => '${e.clientName} ${e.clientEmail} ${e.quoteNumber} ${e.projectTitle}',
+  /// );
+  ///
+  /// ✅ Exemple 2 : Si ton objet est un Map / JSON
+  ///
+  /// listing = fuzzySearch(
+  ///   query: value,
+  ///   items: myJsonList,
+  ///   fieldExtractor: (map) => '${map["name"]} ${map["email"]} ${map["id"]}',
+  /// );
+  ///
+  /// ✅ Exemple 3 : Tu veux chercher automatiquement dans toutes les valeurs d’un Map
+  ///
+  /// listing = fuzzySearch(
+  ///   query: value,
+  ///   items: myMaps,
+  ///   fieldExtractor: (map) => map.values.join(" "),
+  /// );
+  ///
+  /// ✅ Exemple 4 : Pas d’extractor → utilise toString()
+  ///
+  /// listing = fuzzySearch(
+  ///   query: value,
+  ///   items: logsList,
+  /// );
+  ///
+  static List<T> fuzzySearch<T>({
+    required String query,
+    required List<T> items,
+    String Function(T item)? fieldExtractor,
+    double threshold = 0.25, // filtrage minimum de pertinence
+  }) {
+    ///
+    /// Levenshtein distance (fuzzy matching) pour la recherche avec erreur de frappe
+    ///
+    int levenshtein(String s, String t) {
+      if (s == t) return 0;
+      if (s.isEmpty) return t.length;
+      if (t.isEmpty) return s.length;
+
+      final rows = s.length + 1;
+      final cols = t.length + 1;
+
+      final dist = List.generate(rows, (_) => List<int>.filled(cols, 0));
+
+      for (int i = 0; i < rows; i++) dist[i][0] = i;
+      for (int j = 0; j < cols; j++) dist[0][j] = j;
+
+      for (int i = 1; i < rows; i++) {
+        for (int j = 1; j < cols; j++) {
+          final cost = s[i - 1] == t[j - 1] ? 0 : 1;
+
+          dist[i][j] = [
+            dist[i - 1][j] + 1,      // suppression
+            dist[i][j - 1] + 1,      // insertion
+            dist[i - 1][j - 1] + cost // substitution
+          ].reduce((a, b) => a < b ? a : b);
+        }
+      }
+
+      return dist[s.length][t.length];
+    }
+
+    ///
+    /// Fuzzy ratio (plus le score est haut, plus c’est pertinent)
+    ///
+    double fuzzyScore(String query, String text) {
+      // Si exact match → score très élevé
+      if (text.contains(query)) return 1.0;
+
+      // On compare query avec chaque mot du texte
+      final words = text.split(' ');
+
+      double best = 0;
+
+      for (final w in words) {
+        final d = levenshtein(query, w);
+        final maxLen = w.length > query.length ? w.length : query.length;
+        final score = 1 - (d / maxLen);
+
+        if (score > best) best = score;
+      }
+
+      return best; // entre 0 et 1
+    }
+
+    // traitement de la recherche
+    final normalizedQuery = normalize(query);
+    final queryWords = normalizedQuery.split(" ");
+
+    final scored = items.map((item) {
+      // Extraction des champs ciblés
+      final text = normalize(
+        fieldExtractor != null
+            ? fieldExtractor(item)
+            : item.toString(), // fallback générique
+      );
+
+      double totalScore = 0;
+
+      for (final q in queryWords) {
+        totalScore += fuzzyScore(q, text);
+      }
+
+      return {'item': item, 'score': totalScore};
+    }).toList();
+
+    // On supprime les résultats trop faibles
+    scored.removeWhere((Map<String, dynamic> e) => e['score'] < threshold);
+
+    // Tri décroissant par score
+    scored.sort((Map<String, dynamic> a, Map<String, dynamic> b) => b['score'].compareTo(a['score']));
+
+    // Retourne la liste finale
+    return scored.map((Map<String, dynamic> e) => e['item'] as T).toList();
+  }
+
   // ---------------------------------------------------------------------------
   // - Gestion des listes
   // ---------------------------------------------------------------------------
@@ -805,6 +973,247 @@ class ToolsHelpers {
     ).show(context);
   }
 
+  /// //////////////////////////////////////////////////////////////////////////
+  /// - Gestion des toasts
+  /// //////////////////////////////////////////////////////////////////////////
+
+  ///
+  /// Toast flash
+  ///
+  static String toastMe({
+    required BuildContext context,
+    String? title,
+    dynamic message = "Merci de votre action",
+    ToastFlashType flashType = ToastFlashType.success,
+    ToastFlashPosition flashPosition = ToastFlashPosition.bottom,
+    int duration = 5,
+    bool stayDisplay = false,
+    bool userCanClose = true,
+  }) {
+    // positionnement
+    var localFlashPosition;
+    switch (flashPosition) {
+      case ToastFlashPosition.top:
+      // flashPosition = FlashPosition.top;
+        localFlashPosition = Alignment.topCenter;
+        break;
+      case ToastFlashPosition.bottom:
+      // flashPosition = FlashPosition.bottom;
+        localFlashPosition = Alignment.bottomCenter;
+        break;
+      case ToastFlashPosition.center:
+      // flashPosition = FlashPosition.center;
+        localFlashPosition = Alignment.center;
+        break;
+    // default:
+    //   // flashPosition = FlashPosition.bottom;
+    //   localFlashPosition = Alignment.bottomCenter;
+    }
+
+    // niveau d'alerte
+    var localFlashType;
+    Color flashColor;
+    IconData flashIcon;
+    switch (flashType) {
+      case ToastFlashType.success:
+      // flashType = FlashType.success;
+        localFlashType = ToastificationType.success;
+        flashColor = Colors.green;
+        flashIcon = Icons.check_circle_outline;
+        break;
+      case ToastFlashType.warning:
+      // flashType = FlashType.warning;
+        localFlashType = ToastificationType.warning;
+        flashColor = Colors.orange;
+        flashIcon = Icons.warning;
+        break;
+      case ToastFlashType.error:
+      // flashType = FlashType.error;
+        localFlashType = ToastificationType.error;
+        flashColor = Colors.red;
+        flashIcon = Icons.error;
+        break;
+      default:
+      // flashType = FlashType.success;
+        localFlashType = ToastificationType.success;
+        flashColor = Colors.green;
+        flashIcon = Icons.check_circle_outline;
+    }
+
+    // contenu du message
+    Widget description;
+    if (message is String) {
+      description = RichText(
+        text: TextSpan(
+          text: message.trim(),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: ToolsConfigApp.appBlackColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    } else if (message is Widget) {
+      description = message;
+    } else {
+      description = const Text("Merci de votre action");
+    }
+
+    // toast
+    final ToastificationItem toast = toastification.show(
+      context: context,
+      type: localFlashType,
+      style: ToastificationStyle.flatColored,
+      autoCloseDuration: (stayDisplay) ? null : Duration(seconds: duration),
+      title: Text(
+        title ?? ToolsConfigApp.appName,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: ToolsConfigApp.appBlackColor,
+          fontSize: 20,
+        ),
+      ),
+      // you can also use RichText widget for title and description parameters
+      description: description,
+      alignment: localFlashPosition,
+      // direction: TextDirection.ltr,
+      animationDuration: const Duration(milliseconds: 300),
+      animationBuilder: (context, animation, alignment, child) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      icon: Icon(flashIcon),
+      primaryColor: flashColor,
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x07000000),
+          blurRadius: 16,
+          offset: Offset(0, 16),
+          spreadRadius: 0,
+        ),
+      ],
+      progressBarTheme: ProgressIndicatorThemeData(
+        color: flashColor,
+        linearTrackColor: flashColor.withValues(alpha: 0.2),
+        linearMinHeight: 2,
+      ),
+      showProgressBar: true,
+      closeButton: ToastCloseButton(
+        showType: (userCanClose)
+            ? CloseButtonShowType.always
+            : CloseButtonShowType.none,
+      ),
+      closeOnClick: false,
+      pauseOnHover: true,
+      dragToClose: userCanClose,
+      applyBlurEffect: true,
+      // callbacks: ToastificationCallbacks(
+      //   onTap: (toastItem) => print('Toast ${toastItem.id} tapped'),
+      //   onCloseButtonTap: (toastItem) => print('Toast ${toastItem.id} close button tapped'),
+      //   onAutoCompleteCompleted: (toastItem) => print('Toast ${toastItem.id} auto complete completed'),
+      //   onDismissed: (toastItem) => print('Toast ${toastItem.id} dismissed'),
+      // ),
+    );
+
+    // retour de l'identifiant
+    return toast.id;
+  }
+
+  ///
+  /// Suppression d'un toast
+  ///
+  static void toastDestroy(String id) {
+    toastification.dismissById(id, showRemoveAnimation: true);
+  }
+
+  ///
+  /// Suppression de tous les toasts
+  ///
+  static void toastDestroyAll({bool delayForAnimation = true}) {
+    toastification.dismissAll(delayForAnimation: delayForAnimation);
+  }
+
+  ///
+  /// Les différents toast
+  ///
+  static String toastMeSuccess({
+    required BuildContext context,
+    String? title,
+    required dynamic message,
+    ToastFlashPosition flashPosition = ToastFlashPosition.center,
+    bool stayDisplay = false,
+    bool userCanClose = true,
+    int duration = 5,
+  }) => toastMe(
+    context: context,
+    title: title ?? ToolsConfigApp.appName,
+    message: message,
+    flashType: ToastFlashType.success,
+    flashPosition: flashPosition,
+    stayDisplay: stayDisplay,
+    userCanClose: userCanClose,
+    duration: duration,
+  );
+
+  static String toastMeError({
+    required BuildContext context,
+    String? title,
+    required dynamic message,
+    ToastFlashPosition flashPosition = ToastFlashPosition.center,
+    bool stayDisplay = false,
+    bool userCanClose = true,
+    int duration = 5,
+  }) => toastMe(
+    context: context,
+    title: title ?? ToolsConfigApp.appName,
+    message: message,
+    flashType: ToastFlashType.error,
+    flashPosition: flashPosition,
+    stayDisplay: stayDisplay,
+    userCanClose: userCanClose,
+    duration: duration,
+  );
+
+  static String toastMeWarning({
+    required BuildContext context,
+    String? title,
+    required dynamic message,
+    ToastFlashPosition flashPosition = ToastFlashPosition.center,
+    bool stayDisplay = false,
+    bool userCanClose = true,
+    int duration = 5,
+  }) => toastMe(
+    context: context,
+    title: title ?? ToolsConfigApp.appName,
+    message: message,
+    flashType: ToastFlashType.warning,
+    flashPosition: flashPosition,
+    stayDisplay: stayDisplay,
+    userCanClose: userCanClose,
+    duration: duration,
+  );
+
+  static String toastMeInfo({
+    required BuildContext context,
+    String? title,
+    required dynamic message,
+    ToastFlashPosition flashPosition = ToastFlashPosition.center,
+    bool stayDisplay = false,
+    bool userCanClose = true,
+    int duration = 5,
+  }) => toastMe(
+    context: context,
+    title: title ?? ToolsConfigApp.appName,
+    message: message,
+    flashType: ToastFlashType.info,
+    flashPosition: flashPosition,
+    stayDisplay: stayDisplay,
+    userCanClose: userCanClose,
+    duration: duration,
+  );
+
   // ---------------------------------------------------------------------------
   // - Gestion des widgets utiles
   // ---------------------------------------------------------------------------
@@ -974,5 +1383,66 @@ class ToolsHelpers {
     }
 
     return output;
+  }
+
+  // ---------------------------------------------------------------------------
+  // - Gestion des dialogues
+  // ---------------------------------------------------------------------------
+
+  ///
+  /// Boîte de dialogue d'une demande de confirmation utilisateur en fonction
+  /// du device (ios, android, ...)
+  ///
+  static Future<bool> showConfirmDialog(
+      BuildContext context, {
+        String? title,
+        required String message,
+        String validTextLabel = "Confirmer",
+        String cancelTextLabel = "Annuler",
+      }) async {
+    title ??= ToolsConfigApp.appName;
+
+    if (Platform.isIOS || Platform.isMacOS) {
+      return await showCupertinoDialog<bool>(
+        context: context,
+        builder: (ctx) => CupertinoAlertDialog(
+          title: Text(title!),
+          content: Text(message),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(cancelTextLabel),
+              onPressed: () => Navigator.of(ctx).pop(false),
+            ),
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              isDestructiveAction: true,
+              child: Text(validTextLabel),
+              onPressed: () => Navigator.of(ctx).pop(true),
+            ),
+          ],
+        ),
+      ) ??
+          false;
+    } else {
+      return await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(title!),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: Text(cancelTextLabel),
+              onPressed: () => Navigator.of(ctx).pop(false),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: ToolsConfigApp.appRedColor),
+              child: Text(validTextLabel),
+              onPressed: () => Navigator.of(ctx).pop(true),
+            ),
+          ],
+        ),
+      ) ??
+          false;
+    }
   }
 }

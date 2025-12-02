@@ -17,3 +17,5 @@ export './widgets/custom_markdown_text.dart';
 export './widgets/custom_sheet_modal.dart';
 export './widgets/ripple_image_button.dart';
 export './widgets/stroke_text.dart';
+export './widgets/custom_widget_animator.dart';
+

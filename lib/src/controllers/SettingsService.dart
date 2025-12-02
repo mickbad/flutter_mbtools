@@ -210,6 +210,14 @@ class SettingsService {
     _prefs?.set("currentuser_secret_key", value);
   }
 
+  String getCurrentUserIdentification() {
+    return _prefs?.get("currentuser_identification") ?? "";
+  }
+
+  void setCurrentUserIdentification(String value) {
+    _prefs?.set("currentuser_identification", value);
+  }
+
   // ---------------------------------------------------------------------------
   // - Configuration : Option : blocage de la mise en veille du device
   // ---------------------------------------------------------------------------
