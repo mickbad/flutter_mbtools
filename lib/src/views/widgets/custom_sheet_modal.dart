@@ -159,29 +159,35 @@ class CustomSheetModal {
                 double dialogHeight = constraints.maxHeight;
 
                 // retour du design
-                return Scaffold(
-                  backgroundColor: Colors.transparent,
-                  body: CustomModalGeneralDisplay(
-                    controller: controller,
-                    borderRadiusModal: borderRadiusModal,
-                    displayTitle: displayTitle,
-                    defaultCloseButtonColor: defaultCloseButtonColor,
-                    backgroundColorTitleBox: backgroundColorTitleBox,
-                    heightTitleBox: heightTitleBox,
-                    paddingTitleBox: paddingTitleBox,
-                    title: title,
-                    titleStyle: titleStyle,
-                    titleWidgetLeading: titleWidgetLeading,
-                    titleWidgetTrailing: titleWidgetTrailing,
-                    displayTrailingCloseButton: displayTrailingCloseButton,
-                    childPadding: childPadding,
-                    dialogWidth: dialogWidth,
-                    dialogHeight: dialogHeight,
-                    heightActionButtons: heightActionButtons,
-                    actionButtons: actionButtons,
-                    child: child ?? const Placeholder(),
-                  ),
+                Widget appchild = CustomModalGeneralDisplay(
+                  controller: controller,
+                  borderRadiusModal: borderRadiusModal,
+                  displayTitle: displayTitle,
+                  defaultCloseButtonColor: defaultCloseButtonColor,
+                  backgroundColorTitleBox: backgroundColorTitleBox,
+                  heightTitleBox: heightTitleBox,
+                  paddingTitleBox: paddingTitleBox,
+                  title: title,
+                  titleStyle: titleStyle,
+                  titleWidgetLeading: titleWidgetLeading,
+                  titleWidgetTrailing: titleWidgetTrailing,
+                  displayTrailingCloseButton: displayTrailingCloseButton,
+                  childPadding: childPadding,
+                  dialogWidth: dialogWidth,
+                  dialogHeight: dialogHeight,
+                  heightActionButtons: heightActionButtons,
+                  actionButtons: actionButtons,
+                  child: child ?? const Placeholder(),
                 );
+
+                return Container(
+                  decoration: BoxDecoration(
+                    // color: appOrderDetailsBackgroundColor,
+                    borderRadius: borderRadiusModal,
+                  ),
+                  child: appchild,
+                );
+
               },
             ),
           ),

@@ -84,26 +84,48 @@ class _CustomModalGeneralDisplayState extends State<CustomModalGeneralDisplay> {
     }
 
     // affichage de l'écran
-    return Stack(
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      spacing: 0,
       children: [
-        // Affichage en tête de la zone de la barre titre
+        ///
+        /// Affichage en tête de la zone de la barre titre
+        ///
         if (widget.displayTitle) ...[
-          Align(
-            alignment: Alignment.topCenter,
-            child: widget.customCreateTitleBar(
-              context,
-              width: widget.dialogWidth,
-              height: heightTitleBoxInternal,
-              borderRadius: widget.borderRadiusModal,
-              padding: widget.paddingTitleBox,
-            ),
-          ),
+          widget.customCreateTitleBar(
+            context,
+            width: widget.dialogWidth,
+            height: heightTitleBoxInternal,
+            borderRadius: widget.borderRadiusModal,
+            padding: widget.paddingTitleBox,
+          )
         ],
 
-        // Contenu
-        Align(
-          alignment: Alignment.topCenter,
-          child: Container(
+        ///
+        /// Contenu
+        ///
+        Expanded(
+          child: Padding(
+            padding: widget.childPadding ?? const EdgeInsets.all(8.0),
+            child: SingleChildScrollView(child: widget.child),
+          ),
+        ),
+
+        ///
+        /// boutons actions
+        ///
+        if (widget.actionButtons != null &&
+            widget.actionButtons!.isNotEmpty) ...[
+          widget.customCreateFooter(
+            context,
+            width: widget.dialogWidth,
+            height: heightActionButtonInternal,
+            borderRadius: widget.borderRadiusModal,
+            widgets: widget.actionButtons!,
+          ),
+        ],
+        /*
+          Container(
             width: widget.dialogWidth,
             height: widget.dialogHeight -
                 heightTitleBoxInternal -
@@ -118,22 +140,8 @@ class _CustomModalGeneralDisplayState extends State<CustomModalGeneralDisplay> {
               child: SingleChildScrollView(child: widget.child),
             ),
           ),
-        ),
 
-        // boutons actions
-        if (widget.actionButtons != null &&
-            widget.actionButtons!.isNotEmpty) ...[
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: widget.customCreateFooter(
-              context,
-              width: widget.dialogWidth,
-              height: heightActionButtonInternal,
-              borderRadius: widget.borderRadiusModal,
-              widgets: widget.actionButtons!,
-            ),
-          ),
-        ],
+           */
       ],
     );
   }
