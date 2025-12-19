@@ -32,6 +32,51 @@ enum ToastFlashType { success, error, warning, info }
 
 enum ToastFlashPosition { top, bottom, center }
 
+/// The desired mode to launch a URL.
+///
+/// Support for these modes varies by platform. Platforms that do not support
+/// the requested mode may substitute another mode. See [launchUrl] for more
+/// details.
+enum ToolsLaunchMode {
+  /// Leaves the decision of how to launch the URL to the platform
+  /// implementation.
+  platformDefault,
+
+  /// Loads the URL in an in-app web view (e.g., Android WebView).
+  inAppWebView,
+
+  /// Loads the URL in an in-app web view (e.g., Android Custom Tabs, SFSafariViewController).
+  inAppBrowserView,
+
+  /// Passes the URL to the OS to be handled by another application.
+  externalApplication,
+
+  /// Passes the URL to the OS to be handled by another non-browser application.
+  externalNonBrowserApplication,
+}
+
+extension ToolsLaunchModeExtension on ToolsLaunchMode {
+  LaunchMode toLaunchMode() {
+    switch (this) {
+      case ToolsLaunchMode.platformDefault:
+        return LaunchMode.platformDefault;
+
+      case ToolsLaunchMode.inAppWebView:
+        return LaunchMode.inAppWebView;
+
+      case ToolsLaunchMode.inAppBrowserView:
+        return LaunchMode.inAppBrowserView;
+
+      case ToolsLaunchMode.externalApplication:
+        return LaunchMode.externalApplication;
+
+      case ToolsLaunchMode.externalNonBrowserApplication:
+        return LaunchMode.externalNonBrowserApplication;
+    }
+  }
+}
+
+
 ///
 /// Outils helpers
 ///
@@ -359,6 +404,7 @@ class ToolsHelpers {
     }
 
     if (await canLaunchUrlString(phone)) {
+      ToolsConfigApp.logger.t("LaunchPhoneNumber: $phone");
       await launchUrlString(phone);
     }
   }
@@ -374,6 +420,7 @@ class ToolsHelpers {
     }
 
     if (await canLaunchUrlString(email)) {
+      ToolsConfigApp.logger.t("LaunchEmail: $email");
       await launchUrlString(email);
     }
   }
@@ -381,10 +428,42 @@ class ToolsHelpers {
   ///
   /// Ouverture d'une page web interne
   ///
-  static Future<void> launchWeb({required String url}) async {
-    if (await canLaunchUrlString(url)) {
-      await launchUrlString(url, mode: LaunchMode.externalApplication);
+  static Future<void> launchWeb({
+    required String url,
+    bool cache=true,
+    bool checkUrl=true,
+    ToolsLaunchMode mode = ToolsLaunchMode.externalApplication,
+  }) async {
+    if (checkUrl) {
+      if (!await canLaunchUrlString(url)) {
+        ToolsConfigApp.logger.w("LaunchURL($mode): $url: not valid!");
+        return;
+      }
     }
+
+    if (!cache) {
+      final uri = Uri.parse(url).replace(queryParameters: {
+        ...Uri
+            .parse(url)
+            .queryParameters,
+        'time_cache': DateTime
+            .now()
+            .millisecondsSinceEpoch
+            .toString(),
+      });
+
+      // réécriture
+      url = uri.toString();
+    }
+
+    // lancement
+    ToolsConfigApp.logger.t("LaunchURL($mode): $url");
+    await launchUrlString(
+      url,
+      // mode: LaunchMode.inAppBrowserView,
+      mode: mode.toLaunchMode(),
+    );
+    // await launchUrlString(url, mode: LaunchMode.externalApplication);
   }
 
   // ---------------------------------------------------------------------------

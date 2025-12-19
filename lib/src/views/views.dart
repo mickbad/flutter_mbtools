@@ -18,4 +18,4 @@ export './widgets/custom_sheet_modal.dart';
 export './widgets/ripple_image_button.dart';
 export './widgets/stroke_text.dart';
 export './widgets/custom_widget_animator.dart';
-
+export './widgets/animated_auth_page.dart';
