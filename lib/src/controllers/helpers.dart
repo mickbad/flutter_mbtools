@@ -428,11 +428,19 @@ class ToolsHelpers {
   ///
   /// Ouverture d'une page web interne
   ///
+  /// [url] url à suivre vers la destination
+  /// [cache] si false inclut un time code dans la querystring de l'url
+  /// [cacheName] indique l'argument à inclure dans la querystring
+  /// [checkUrl] indique si une vérification de l'url doit avoir lieu
+  /// [checkLaunchWeb] fonction de rappel pour valider l'envoi de l'url (si on poursuit la procédure, la fonction doit retourner true)
+  ///
   static Future<void> launchWeb({
     required String url,
     bool cache=true,
+    String? cacheName,
     bool checkUrl=true,
     ToolsLaunchMode mode = ToolsLaunchMode.externalApplication,
+    Future<bool> Function(String url)? checkLaunchWeb,
   }) async {
     if (checkUrl) {
       if (!await canLaunchUrlString(url)) {
@@ -442,11 +450,14 @@ class ToolsHelpers {
     }
 
     if (!cache) {
+      final nameParam = (cacheName == null || cacheName.trim().isEmpty)
+          ? "time_cache"
+          : cacheName;
       final uri = Uri.parse(url).replace(queryParameters: {
         ...Uri
             .parse(url)
             .queryParameters,
-        'time_cache': DateTime
+        nameParam: DateTime
             .now()
             .millisecondsSinceEpoch
             .toString(),
@@ -454,6 +465,15 @@ class ToolsHelpers {
 
       // réécriture
       url = uri.toString();
+    }
+
+    // check du lancement si nécessaire
+    if (checkLaunchWeb != null) {
+      final canLaunch = await checkLaunchWeb(url);
+      ToolsConfigApp.logger.t("LaunchURL($mode): checkLaunchWeb($url) => $canLaunch");
+      if (!canLaunch) {
+        return;
+      }
     }
 
     // lancement
