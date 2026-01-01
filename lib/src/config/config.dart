@@ -28,10 +28,6 @@ class ToolsConfigApp {
   // copyright de l'application
   static String appCopyrightName = "Ricochets Développement";
 
-  // gestion des notifications
-  static final mbNotifications notifications =
-      mbNotifications('mipmap/ic_launcher');
-
   // gestion de l'état globale de l'application
   static final GlobalKey<NavigatorState> appNavigatorKey =
       GlobalKey<NavigatorState>();
