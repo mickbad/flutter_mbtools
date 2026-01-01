@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_linux
+  local_notifier
   pasteboard
   screen_retriever_linux
   url_launcher_linux

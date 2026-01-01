@@ -14,6 +14,12 @@ dependencies:
   mbtools:
     path: ../
 
+  # librairie ricochets.dev
+  mbnotificationtools:
+    git:
+      url: https://github.com/mickbad/flutter_mbnotificationtools.git
+      ref: 1.0.0+2
+
   # gestion du statemanagement
   flutter_hooks: ^0.21.2
   hooks_riverpod: ^2.6.1
@@ -21,7 +27,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
