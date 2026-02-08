@@ -15,18 +15,21 @@ Map<String, double> _cacheResponseDatetime = {};
 
 /// Fonction d'appel à l'api
 Future<Post> fetchPost(
-  RequestType type,
-  String route, {
-  Map<String, String>? options,
-  Map<String, String>? postBody,
-  Map<String, String>? headers,
-  String? apiURL,
-  String? language,
-  bool cacheResults = true,
-  bool resetCache = false,
-  bool isApiKeyHeader = true,
-  bool? isGzipResponse,
-}) async {
+    RequestType type,
+    String route, {
+      Map<String, String>? options,
+      Map<String, String>? postBody,
+      Map<String, String>? headers,
+      Map<String, String>? requestCookies,
+      String? apiURL,
+      String? language,
+      bool cacheResults = true,
+      bool resetCache = false,
+      bool isApiKeyHeader = true,
+      bool storeResponseCookies = true,
+      bool resetStoredCookies = false,
+      bool? isGzipResponse,
+    }) async {
   // Etablissement de l'adresse de l'api avec l'utilisation du défaut
   apiURL ??= ToolsConfigApp.appApiURL;
 
@@ -66,6 +69,17 @@ Future<Post> fetchPost(
   // options de la requête depuis l'utilisateur
   if (options != null) {
     _completeUrl += generateStringUrlOptions(options);
+  }
+
+  // fabrication de l'url URI
+  final Uri completeUrl = Uri.parse(_completeUrl);
+
+  // nettoyage des cookies si demandée
+  if (resetStoredCookies) {
+    await saveCookiesForDomain(
+      domain: completeUrl.host,
+      cookies: {},
+    );
   }
 
   // gestion du POST
@@ -111,9 +125,26 @@ Future<Post> fetchPost(
 
   // appel à l'api
   if (!isCachedResponse) {
-    // fabrication de l'url URI
-    Uri completeUrl = Uri.parse(_completeUrl);
+    // gestion des cookies
+    final storedCookies = await loadCookiesForDomain(
+      domain: completeUrl.host,
+    );
 
+    final Map<String, String> finalCookies = {};
+    finalCookies.addAll(storedCookies);
+
+    if (requestCookies != null) {
+      finalCookies.addAll(requestCookies); // override possible
+    }
+
+    // finalisation du header avec les cookies à envoyer
+    if (finalCookies.isNotEmpty) {
+      localHeaders['Cookie'] = finalCookies.entries
+          .map((e) => '${e.key}=${e.value}')
+          .join('; ');
+    }
+
+    // envoi de la requête
     try {
       switch (type) {
         case RequestType.get:
@@ -121,15 +152,39 @@ Future<Post> fetchPost(
           break;
         case RequestType.post:
           response =
-              await http.post(completeUrl, body: postBody, headers: localHeaders);
+          await http.post(completeUrl, body: postBody, headers: localHeaders);
           break;
         case RequestType.put:
           response =
-              await http.put(completeUrl, body: postBody, headers: localHeaders);
+          await http.put(completeUrl, body: postBody, headers: localHeaders);
           break;
         case RequestType.delete:
           response = await http.delete(completeUrl, headers: localHeaders);
           break;
+      }
+
+      // récupération des cookies qui ont transité depuis le serveur
+      final rawCookie = response.headers['set-cookie'];
+
+      // stockage en interne des cookies pour réutilisation
+      if (storeResponseCookies && rawCookie != null) {
+        final receivedCookies = parseCookies(rawCookie);
+
+        if (receivedCookies.isNotEmpty) {
+          // chargement des anciens cookies
+          final existingCookies = await loadCookiesForDomain(
+            domain: completeUrl.host,
+          );
+
+          // fusion de ce qu'on a reçu
+          existingCookies.addAll(receivedCookies);
+
+          // stockage en interne
+          await saveCookiesForDomain(
+            domain: completeUrl.host,
+            cookies: existingCookies,
+          );
+        }
       }
 
       // gestion du stockage dans le cache
@@ -206,6 +261,41 @@ Future<String> getHeaderUserAgent() async {
     return "${ToolsConfigApp.appName}/$osName/Apps".toUpperCase();
   }
 }
+
+///
+/// Traitement de la ligne des cookies reçus en en-tête HTTP
+///
+Map<String, String> parseCookies(String rawCookie) {
+  final Map<String, String> cookies = {};
+
+  final parts = rawCookie.split(',');
+  for (final part in parts) {
+    final cookie = part.split(';').first.trim();
+    final index = cookie.indexOf('=');
+    if (index > 0) {
+      cookies[cookie.substring(0, index)] =
+          cookie.substring(index + 1);
+    }
+  }
+  return cookies;
+}
+
+///
+/// Chargement des cookies stockés en dur dans l'application
+///
+Future<Map<String, String>> loadCookiesForDomain({required String domain}) async {
+  final jsonString = ToolsConfigApp.preferences.get('cookies_$domain') as String?;
+  if (jsonString == null) return {};
+  return Map<String, String>.from(json.decode(jsonString));
+}
+
+///
+/// Stockage des cookies d'un domaine en dur sur l'application
+///
+Future<void> saveCookiesForDomain({required String domain, Map<String, String>? cookies}) async => await ToolsConfigApp.preferences.set(
+  'cookies_$domain',
+  json.encode(cookies ?? ""),
+);
 
 // -----------------------------------------------------------------------------
 // - Outils des réponses

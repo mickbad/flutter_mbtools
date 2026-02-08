@@ -1,11 +1,39 @@
 
 import 'package:flutter/material.dart';
+import 'package:pinput/pinput.dart';
 
 import '../../../mbtools.dart';
+
+
+///
+/// Type de connexion utilisateur
+///
+enum LoginAuthMode {
+  // par défaut : email/password
+  emailPassword,
+
+  // par email uniquement avec mot de passe OTP
+  emailOTP,
+}
 
 ///
 /// Classes de données pour les formulaires
 ///
+class LoginOTPData {
+  final String email;
+  final String otp;
+  final int otpLength;
+  LoginOTPData({required this.email, this.otp = "", this.otpLength = 4});
+
+  ///
+  /// Affichage toString
+  ///
+  @override
+  String toString() {
+    return 'LoginOTPData(email: $email, otp: $otp (length: $otpLength)';
+  }
+}
+
 class LoginData {
   final String email;
   final String password;
@@ -89,6 +117,12 @@ class AnimatedAuthLabels {
   final String formValidationMinLength;
 
   ///
+  /// Formulaire OTP
+  ///
+  final String loginOTPFormTitle;
+  final String loginOTPFormSubmitReturn;
+
+  ///
   /// Constructeurs
   ///
 
@@ -124,6 +158,9 @@ class AnimatedAuthLabels {
     this.formValidationPassword = "Mot de passe invalide",
     this.formValidationMinLength = "Minimum [number] caractères",
     this.formValidationConfirmPassword = "Les mots de passe ne correspondent pas",
+
+    this.loginOTPFormTitle = "Saisissez le code PIN que vous avez reçu pour vous connecter",
+    this.loginOTPFormSubmitReturn = "Retour",
   });
 
   // Constructeur EN
@@ -158,6 +195,9 @@ class AnimatedAuthLabels {
     this.formValidationPassword = "Invalid password",
     this.formValidationMinLength = "Minimum [number] characters",
     this.formValidationConfirmPassword = "Passwords do not match",
+
+    this.loginOTPFormTitle = "Enter the PIN code you received to sign in",
+    this.loginOTPFormSubmitReturn = "Back",
   });
 
   // ES
@@ -192,6 +232,9 @@ class AnimatedAuthLabels {
     this.formValidationPassword = "Contraseña no válida",
     this.formValidationMinLength = "Mínimo [number] caracteres",
     this.formValidationConfirmPassword = "Las contraseñas no coinciden",
+
+    this.loginOTPFormTitle = "Introduce el código PIN que has recibido para iniciar sesión",
+    this.loginOTPFormSubmitReturn = "Volver",
   });
 
   // DE
@@ -226,6 +269,9 @@ class AnimatedAuthLabels {
     this.formValidationPassword = "Ungültiges Passwort",
     this.formValidationMinLength = "Mindestens [number] Zeichen",
     this.formValidationConfirmPassword = "Passwörter stimmen nicht überein",
+
+    this.loginOTPFormTitle = "Geben Sie den PIN-Code ein, den Sie zum Anmelden erhalten haben",
+    this.loginOTPFormSubmitReturn = "Zurück",
   });
 
   // IT
@@ -260,6 +306,9 @@ class AnimatedAuthLabels {
     this.formValidationPassword = "Password non valida",
     this.formValidationMinLength = "Minimo [number] caratteri",
     this.formValidationConfirmPassword = "Le password non coincidono",
+
+    this.loginOTPFormTitle = "Inserisci il codice PIN che hai ricevuto per accedere",
+    this.loginOTPFormSubmitReturn = "Indietro",
   });
 
   // Chinois traditionnel
@@ -294,6 +343,9 @@ class AnimatedAuthLabels {
     this.formValidationPassword = "密碼無效",
     this.formValidationMinLength = "至少 [number] 個字元",
     this.formValidationConfirmPassword = "密碼不一致",
+
+    this.loginOTPFormTitle = "請輸入您收到的 PIN 碼以登入",
+    this.loginOTPFormSubmitReturn = "返回",
   });
 
   // Chinois simplifié
@@ -328,6 +380,9 @@ class AnimatedAuthLabels {
     this.formValidationPassword = "密码无效",
     this.formValidationMinLength = "至少 [number] 个字符",
     this.formValidationConfirmPassword = "两次输入的密码不一致",
+
+    this.loginOTPFormTitle = "请输入您收到的 PIN 码以登录",
+    this.loginOTPFormSubmitReturn = "返回",
   });
 
   // RU
@@ -362,6 +417,9 @@ class AnimatedAuthLabels {
     this.formValidationPassword = "Неверный пароль",
     this.formValidationMinLength = "Минимум [number] символов",
     this.formValidationConfirmPassword = "Пароли не совпадают",
+
+    this.loginOTPFormTitle = "Введите PIN-код, который вы получили для входа",
+    this.loginOTPFormSubmitReturn = "Назад",
   });
 }
 
@@ -369,6 +427,13 @@ class AnimatedAuthLabels {
 /// Module de login souscription retour de mot de passe
 ///
 class AnimatedAuthPage extends StatefulWidget {
+  ///
+  /// Mode de connexion au service
+  /// mode == emailPassword → onLogin required
+  /// mode == emailOTP → onOTPLogin and onOTPValidate required
+  ///
+  final LoginAuthMode mode;
+
   ///
   /// Activation du mode responsive : affichage différent en tablette ou
   /// mobile ou simplement que mobile
@@ -471,9 +536,25 @@ class AnimatedAuthPage extends StatefulWidget {
   final AnimatedAuthLabels labels;
 
   ///
+  /// Option OTP : longeur OTP
+  ///
+  final int otpLength;
+
+  ///
+  /// Option OTP : type d'OTP
+  ///
+  final TextInputType otpInputType;
+
+  ///
+  /// Callback de traitement de la connexion utilisateur par One Time Password
+  ///
+  final Future<String?> Function(LoginOTPData data)? onOTPLogin;
+  final Future<String?> Function(LoginOTPData data)? onOTPValidate;
+
+  ///
   /// Callback de traitement de la connexion utilisateur
   ///
-  final Future<String?> Function(LoginData data) onLogin;
+  final Future<String?> Function(LoginData data)? onLogin;
 
   ///
   /// Callback de traitement du mot de passe oublié
@@ -489,7 +570,10 @@ class AnimatedAuthPage extends StatefulWidget {
 
   AnimatedAuthPage({
     super.key,
-    required this.onLogin,
+    this.mode = LoginAuthMode.emailPassword,
+    this.onOTPLogin,
+    this.onOTPValidate,
+    this.onLogin,
     this.onForgotPassword,
     this.onSignup,
     this.responsive = false,
@@ -512,7 +596,19 @@ class AnimatedAuthPage extends StatefulWidget {
     this.showSnackbar = true,
     this.minPasswordLength = 6,
     this.labels = const AnimatedAuthLabels(),
+    this.otpLength = 4,
+    this.otpInputType = TextInputType.number,
   }) {
+    // vérification de l'usage des paramètres
+    if (mode == LoginAuthMode.emailPassword) {
+      assert(onLogin != null, 'onLogin parameter required when mode is emailPassword');
+    }
+
+    if (mode == LoginAuthMode.emailOTP) {
+      assert(onOTPLogin != null, 'onOTPLogin parameter required when mode is emailOTP');
+      assert(onOTPValidate != null, 'onOTPValidate parameter required when mode is emailOTP');
+    }
+
     // configuration post-argument
     loginBackgroundColor ??= ToolsConfigApp.appWhiteColor.darken();
     signupBackgroundColor ??= ToolsConfigApp.appWhiteColor.darken();
@@ -531,6 +627,7 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
   bool _isLoading = false;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
+  bool _isOTPDisplayValideForm = false;
 
   final _loginEmailController = TextEditingController();
   final _loginPasswordController = TextEditingController();
@@ -586,6 +683,8 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
     // suppression du focus
     FocusScope.of(context).unfocus();
 
+    if (widget.onLogin == null) return;
+
     if (!_loginFormKey.currentState!.validate()) return;
 
     // extract informations
@@ -594,12 +693,73 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
 
     setState(() => _isLoading = true);
     ToolsConfigApp.logger.d("[AnimatedAuthPage]: login in with '$email'");
-    final error = await widget.onLogin(
+    final error = await widget.onLogin!(
       LoginData(
         email: email,
         password: password,
       ),
     );
+    setState(() => _isLoading = false);
+
+    if (widget.showSnackbar && error != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: ToolsConfigApp.appErrorColor),
+      );
+    }
+  }
+
+  Future<void> _handleOTPLogin({String? otp}) async {
+    // suppression du focus
+    FocusScope.of(context).unfocus();
+
+    if (widget.onOTPLogin == null) return;
+    if (widget.onOTPValidate == null) return;
+
+    if (otp == null && !_loginFormKey.currentState!.validate()) return;
+
+    // extract informations
+    final email = _loginEmailController.text.trim();
+
+    setState(() => _isLoading = true);
+
+    String? error;
+    if (otp == null) {
+      ///
+      /// Send OTP to user
+      ///
+      ToolsConfigApp.logger.d("[AnimatedAuthPage]: otp login in with '$email'");
+      error = await widget.onOTPLogin!(
+        LoginOTPData(
+          email: email,
+          otpLength: widget.otpLength,
+        ),
+      );
+
+      if (error == null) {
+        // Réussite : on est ici pour demander la validation de l'OTP
+        setState(() {
+          _isOTPDisplayValideForm = true;
+        });
+      }
+    }
+    else {
+      ///
+      /// Valide OTP from user input
+      ///
+      ToolsConfigApp.logger.d("[AnimatedAuthPage]: otp validation with '$email'");
+      error = await widget.onOTPValidate!(
+        LoginOTPData(
+          email: email,
+          otp: otp,
+          otpLength: widget.otpLength,
+        ),
+      );
+
+      //  on a terminé la validation de l'OTP
+      setState(() {
+        _isOTPDisplayValideForm = false;
+      });
+    }
     setState(() => _isLoading = false);
 
     if (widget.showSnackbar && error != null && mounted) {
@@ -735,20 +895,38 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
             return ClipRect(
               child: Stack(
                 children: [
-                  Transform.translate(
-                    offset: Offset(-_slideAnimation.value * MediaQuery.of(context).size.width, 0),
-                    child: Padding(
-                      padding: widget.formPadding,
-                      child: _buildLoginForm(),
+                  ///
+                  /// Mode Email/Password
+                  ///
+                  if (widget.mode == LoginAuthMode.emailPassword) ...[
+                    Transform.translate(
+                      offset: Offset(-_slideAnimation.value * MediaQuery.of(context).size.width, 0),
+                      child: Padding(
+                        padding: widget.formPadding,
+                        child: _buildLoginForm(),
+                      ),
                     ),
-                  ),
-                  Transform.translate(
-                    offset: Offset((1 - _slideAnimation.value) * MediaQuery.of(context).size.width, 0),
-                    child: Padding(
-                      padding: widget.formPadding,
-                      child: _buildSignupForm(),
+                    Transform.translate(
+                      offset: Offset((1 - _slideAnimation.value) * MediaQuery.of(context).size.width, 0),
+                      child: Padding(
+                        padding: widget.formPadding,
+                        child: _buildSignupForm(),
+                      ),
                     ),
-                  ),
+                  ],
+
+                  ///
+                  /// Mode Email/OTP
+                  ///
+                  if (widget.mode == LoginAuthMode.emailOTP) ...[
+                    Transform.translate(
+                      offset: Offset(-_slideAnimation.value * MediaQuery.of(context).size.width, 0),
+                      child: Padding(
+                        padding: widget.formPadding,
+                        child: _buildOTPLoginForm(),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -769,24 +947,47 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            return Row(
-              spacing: 5,
-              children: [
-                Expanded(
-                  child: AnimatedOpacity(
-                    opacity: _isLogin ? 1.0 : 0.3,
-                    duration: const Duration(milliseconds: 500),
-                    child: _buildLoginForm(),
+            ///
+            /// Mode Email/Password
+            ///
+            if (widget.mode == LoginAuthMode.emailPassword) {
+              return Row(
+                spacing: 5,
+                children: [
+                  Expanded(
+                    child: AnimatedOpacity(
+                      opacity: _isLogin ? 1.0 : 0.3,
+                      duration: const Duration(milliseconds: 500),
+                      child: _buildLoginForm(),
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: AnimatedOpacity(
-                    opacity: _isLogin ? 0.3 : 1.0,
-                    duration: const Duration(milliseconds: 500),
-                    child: _buildSignupForm(),
+                  Expanded(
+                    child: AnimatedOpacity(
+                      opacity: _isLogin ? 0.3 : 1.0,
+                      duration: const Duration(milliseconds: 500),
+                      child: _buildSignupForm(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              );
+            }
+
+            ///
+            /// Mode Email/OTP
+            ///
+            if (widget.mode == LoginAuthMode.emailOTP) {
+              return AnimatedOpacity(
+                opacity: _isLogin ? 1.0 : 0.3,
+                duration: const Duration(milliseconds: 500),
+                child: _buildOTPLoginForm(),
+              );
+            }
+
+            ///
+            /// Non implementé
+            ///
+            return Center(
+              child: Text("not implemented, yet!"),
             );
           },
         ),
@@ -854,6 +1055,7 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
                 onPressed: () => setState(() => _showPassword = !_showPassword),
               ),
               validator: (v) => v?.isEmpty == true ? widget.labels.formValidationPassword : null,
+              onSubmit: _handleLogin,
             ),
             const SizedBox(height: 8),
 
@@ -921,6 +1123,181 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
           ],
         ),
       ),
+    );
+  }
+
+  ///
+  /// Construction du formulaire de connexion pour du One Time Password
+  ///
+  Widget _buildOTPLoginForm() {
+    // dimensions radius
+    double loginBorderRadius = widget.loginBorderRadius;
+    if (loginBorderRadius < 0) {
+      loginBorderRadius = 0;
+    }
+
+    ///
+    /// Création du formulaire de saisie du login
+    ///
+    if (!_isOTPDisplayValideForm) {
+      return Container(
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: widget.loginBackgroundColor,
+          borderRadius: BorderRadius.circular(loginBorderRadius),
+        ),
+        child: Form(
+          key: _loginFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildLogo(),
+              const SizedBox(height: 24),
+              Text(
+                widget.labels.loginFormTitle,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: ToolsConfigApp
+                      .appPrimaryColor, // const Color(0xFF667eea),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.labels.loginFormDescription,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(
+                  color: ToolsConfigApp.appPrimaryColor.withValues(
+                      alpha: 0.6), // Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              _buildTextField(
+                controller: _loginEmailController,
+                label: widget.labels.formLabelEmail,
+                icon: Icons.email_outlined,
+                validator: (v) => v?.contains('@') != true
+                    ? widget.labels.formValidationEmail
+                    : null,
+                onSubmit: () => _handleOTPLogin(otp: null),
+              ),
+              const SizedBox(height: 8),
+
+              ///
+              /// Acceptation des CGU et politique de confidentialité
+              ///
+              _buildLegalLinks(),
+              const SizedBox(height: 24),
+
+              ///
+              /// Activation du login/création de compte
+              ///
+              _buildButton(
+                text: widget.labels.formLabelSubmit,
+                onPressed: () => _handleOTPLogin(otp: null),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      );
+    }
+
+    ///
+    /// Création du formulaire de saisie de l'otp
+    ///
+    final defaultPinTheme = PinTheme(
+      width: 56,
+      height: 56,
+      textStyle: TextStyle(
+        fontSize: 20,
+        color: ToolsConfigApp.appSecondaryColor,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(color: ToolsConfigApp.appPrimaryColor),
+        borderRadius: BorderRadius.circular(20),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyDecorationWith(
+      border: Border.all(color: ToolsConfigApp.appSecondaryColor),
+      borderRadius: BorderRadius.circular(8),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration?.copyWith(
+        color: Color.fromRGBO(234, 239, 243, 1),
+      ),
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: widget.loginBackgroundColor,
+        borderRadius: BorderRadius.circular(loginBorderRadius),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildLogo(),
+          const SizedBox(height: 24),
+          Text(
+            widget.labels.loginOTPFormTitle,
+            style: Theme
+                .of(context)
+                .textTheme
+                .headlineMedium
+                ?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: ToolsConfigApp
+                  .appPrimaryColor, // const Color(0xFF667eea),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+
+          // code pin
+          Pinput(
+            length: widget.otpLength,
+            defaultPinTheme: defaultPinTheme,
+            focusedPinTheme: focusedPinTheme,
+            submittedPinTheme: submittedPinTheme,
+            pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+            hapticFeedbackType: HapticFeedbackType.mediumImpact,
+            keyboardType: widget.otpInputType,
+            textCapitalization: TextCapitalization.words,
+            showCursor: true,
+            onCompleted: (pin) => _handleOTPLogin(otp: pin.toString().toUpperCase()),
+          ),
+          const SizedBox(height: 36),
+
+          ///
+          /// Acceptation des CGU et politique de confidentialité
+          ///
+          _buildLegalLinks(),
+          const SizedBox(height: 24),
+
+          // bouton d'action
+          _buildButton(
+            text: widget.labels.loginOTPFormSubmitReturn,
+            onPressed: () => setState(() {
+              _isOTPDisplayValideForm = false;
+            }),
+          ),
+        ],
+      )
+      ,
     );
   }
 
@@ -1012,66 +1389,14 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
               validator: (v) => v != _signupPasswordController.text
                   ? widget.labels.formValidationConfirmPassword
                   : null,
+              onSubmit: _handleSignup,
             ),
             const SizedBox(height: 16),
 
             ///
             /// Acceptation des CGU et politique de confidentialité
             ///
-            if (widget.privacyPolicyUrl != null || widget.termsOfUseUrl != null) ...[
-              Wrap(
-                spacing: 4,
-                runSpacing: 2,
-                alignment: WrapAlignment.center,
-                children: [
-                  Text(
-                    widget.labels.signupFormLegacyPrefix,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: ToolsConfigApp.appPrimaryColor.withValues(alpha: 0.6),
-                    ),
-                  ),
-
-                  ///
-                  /// Politique de confidentialité
-                  ///
-                  if (widget.privacyPolicyUrl != null) ...[
-                    InkWell(
-                      onTap: () {
-                        // Ouvrir la politique de confidentialité
-                        ToolsHelpers.launchWeb(url: widget.privacyPolicyUrl!);
-                      },
-                      child: Text(
-                        widget.labels.signupFormLegacyPrivacyPolicy,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: ToolsConfigApp.appPrimaryColor.withValues(alpha: 0.6),
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(width: 8),
-
-                  ///
-                  /// CGU
-                  ///
-                  if (widget.termsOfUseUrl != null) ...[
-                    InkWell(
-                      onTap: () {
-                        // Ouvrir les CGU
-                        ToolsHelpers.launchWeb(url: widget.termsOfUseUrl!);
-                      },
-                      child: Text(
-                        widget.labels.signupFormLegacyTermsOfUse,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: ToolsConfigApp.appPrimaryColor.withValues(alpha: 0.6),
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
+            _buildLegalLinks(),
             const SizedBox(height: 24),
 
             _buildButton(
@@ -1163,18 +1488,84 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
   }
 
   ///
+  /// Acceptation des CGU et politique de confidentialité
+  ///
+  Widget _buildLegalLinks() {
+    if (widget.privacyPolicyUrl == null && widget.termsOfUseUrl == null) {
+      return const SizedBox.shrink();
+    }
+
+    // affichage design
+    return Wrap(
+      spacing: 4,
+      runSpacing: 2,
+      alignment: WrapAlignment.center,
+      children: [
+        Text(
+          widget.labels.signupFormLegacyPrefix,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: ToolsConfigApp.appPrimaryColor.withValues(alpha: 0.6),
+          ),
+        ),
+
+        ///
+        /// Politique de confidentialité
+        ///
+        if (widget.privacyPolicyUrl != null) ...[
+          InkWell(
+            onTap: () {
+              // Ouvrir la politique de confidentialité
+              ToolsHelpers.launchWeb(url: widget.privacyPolicyUrl!);
+            },
+            child: Text(
+              widget.labels.signupFormLegacyPrivacyPolicy,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: ToolsConfigApp.appPrimaryColor.withValues(alpha: 0.6),
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(width: 8),
+
+        ///
+        /// CGU
+        ///
+        if (widget.termsOfUseUrl != null) ...[
+          InkWell(
+            onTap: () {
+              // Ouvrir les CGU
+              ToolsHelpers.launchWeb(url: widget.termsOfUseUrl!);
+            },
+            child: Text(
+              widget.labels.signupFormLegacyTermsOfUse,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: ToolsConfigApp.appPrimaryColor.withValues(alpha: 0.6),
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+  ///
   /// Gestion de la zone de texte
   ///
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    FocusNode? focusNode,
+    FocusNode? nextFocus,
     bool obscureText = false,
     Widget? suffixIcon,
     String? Function(String?)? validator,
+    VoidCallback? onSubmit,
   }) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       obscureText: obscureText,
       validator: validator,
       decoration: InputDecoration(
@@ -1198,6 +1589,13 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
         filled: true,
         fillColor: ToolsConfigApp.appWhiteColor, // Colors.grey[50],
       ),
+      onFieldSubmitted: (_) {
+        if (nextFocus != null) {
+          FocusScope.of(context).requestFocus(nextFocus);
+        } else if (onSubmit != null) {
+          onSubmit();
+        }
+      },
     );
   }
 
@@ -1248,3 +1646,4 @@ class _AnimatedAuthPageState extends State<AnimatedAuthPage> with SingleTickerPr
     );
   }
 }
+
