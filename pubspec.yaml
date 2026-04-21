@@ -1,23 +1,23 @@
 name: mbtools
 description: "Ensemble d'outils dart/flutter."
-version: 1.2.16+1
+version: 1.2.17+1
 homepage: https://www.ricochets.dev
 
 environment:
-  sdk: ^3.5.4
-  flutter: ">=1.17.0"
+  sdk: ^3.10.0
+  flutter: ">=3.35.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
   # gestion de l'application
-  connectivity_plus: ^7.0.0
-  package_info_plus: ^9.0.0
-  device_info_plus: ^12.3.0
+  connectivity_plus: ^7.1.1
+  package_info_plus: ^9.0.1
+  device_info_plus: ^12.4.0
   path_provider: ^2.1.5
-  markdown: ^7.3.0
-  wakelock_plus: ^1.4.0
+  markdown: ^7.3.1
+  wakelock_plus: ^1.5.2
 
   # markdown
   # STOPPED : TODO Change this very soon
@@ -25,17 +25,20 @@ dependencies:
   # markdown_widget: ^2.3.2+8
 
   # gestion des données
-  shared_preferences: ^2.5.4
+  shared_preferences: ^2.5.5
   pref: ^2.8.0
   encrypt: ^5.0.3
   # html: ^0.15.5
 
   # gestion du tracking
-  matomo_tracker: ^6.1.0
+#  matomo_tracker: ^6.1.0
+  matomo_tracker:
+    git:
+      url: https://github.com/Floating-Dartists/matomo-tracker.git
 
   # gestion des widgets
   flutter_animate: ^4.5.2
-  motion: ^2.0.1
+  motion: ^2.0.2
   glassmorphism_ui: ^0.3.0
   flutter_slidable: ^4.0.3
   pinput: ^6.0.2
@@ -55,23 +58,27 @@ dependencies:
   # network
   url_launcher: ^6.3.2
   http: ^1.6.0
-  fetch_client: ^1.2.0
+  fetch_client: ^1.2.1
 
   # notifications
-  toastification: ^3.0.3
+  toastification: ^3.2.0
 
   # outils design/utilitaire
-  share_plus: ^12.0.1
-  file_picker: ^10.3.10
+  share_plus: ^12.0.2
+  file_picker: ^11.0.2
+#    git:
+#      url: https://github.com/miguelpruivo/flutter_file_picker.git
+
   flutter_file_dialog: ^3.0.3
   slug_it: ^0.0.1
-  pasteboard:
-    git:
-      url: https://github.com/MixinNetwork/flutter-plugins.git
-      path: packages/pasteboard
+  pasteboard: ^0.5.0
+#  pasteboard:
+#    git:
+#      url: https://github.com/MixinNetwork/flutter-plugins.git
+#      path: packages/pasteboard
 
   # gestion des sons
-  audioplayers: ^6.5.1
+  audioplayers: ^6.6.0
   # just_audio: ^0.9.42
   # just_audio_windows: ^0.2.2
   # just_audio_mpv: ^0.1.7 # TODO : voir https://pub.dev/packages/just_audio_media_kit please !!!!!!

@@ -92,7 +92,7 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/window_manager/macos
 
 SPEC CHECKSUMS:
-  audioplayers_darwin: 4027b33a8f471d996c13f71cb77f0b1583b5d923
+  audioplayers_darwin: f15e209a3e856d1a7edcf98dc029f484fead2242
   connectivity_plus: 0a976dfd033b59192912fa3c6c7b54aab5093802
   device_info_plus: 1b14eed9bf95428983aed283a8d51cce3d8c4215
   file_picker: e716a70a9fe5fd9e09ebc922d7541464289443af
@@ -101,7 +101,7 @@ SPEC CHECKSUMS:
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   local_notifier: e9506bc66fc70311e8bc7291fb70f743c081e4ff
   package_info_plus: 12f1c5c2cfe8727ca46cbd0b26677728972d9a5b
-  pasteboard: 9b69dba6fedbb04866be632205d532fe2f6b1d99
+  pasteboard: f179698f095f9778bb5753a249027e697ba98953
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   screen_retriever_macos: 776e0fa5d42c6163d2bf772d22478df4b302b161
   share_plus: 1fa619de8392a4398bfaf176d441853922614e89

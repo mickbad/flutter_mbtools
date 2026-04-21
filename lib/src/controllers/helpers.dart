@@ -1410,7 +1410,7 @@ class ToolsHelpers {
     List<String>? allowedExtensions,
     bool lockParentWindow = false,
   }) async {
-    return await FilePicker.platform.saveFile(
+    return await FilePicker.saveFile(
       dialogTitle: dialogTitle ?? 'Please select an output file:',
       fileName: fileName != null ? p.basename(fileName) : null,
       initialDirectory: initialDirectory,
@@ -1445,7 +1445,7 @@ class ToolsHelpers {
     bool includeResultBytes = false,
     List<String> sizeLabels = const ['octets', 'Ko', 'Mo', 'Go', 'To'],
   }) async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       dialogTitle: dialogTitle ?? 'Please select an input file:',
       initialDirectory: initialDirectory,
       type: (allowedExtensions != null) ? FileType.custom : FileType.any,
