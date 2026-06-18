@@ -38,6 +38,9 @@ Future main() async {
       removeAmbigousItems: true,
       upperCase: true,
     ),
+
+    "updates_beta_enabled": false, // indique si les mises à jour beta sont autorisées
+    "updates_auto_enabled": true, // indique si les mises à jour sont checkés automatiquement
   });
 
   // ajustements supplémentaires
@@ -96,6 +99,48 @@ Future main() async {
     ToolsConfigApp.logger.i(
         "Config: mypassword: ${ToolsConfigApp.preferences.get("mypassword")}");
   });
+
+  ///
+  /// Configuration de la mise à jour de l'application
+  ///
+  AppUpdateChecker.init(
+    navigatorKey: ToolsConfigApp.appNavigatorKey,
+    jsonUrl: "http://127.0.0.1/mbtools-update.json",
+    beta: ToolsConfigApp.preferences.get("updates_beta_enabled", false) as bool,
+    autoStartCheck: ToolsConfigApp.preferences.get("updates_auto_enabled", false) as bool,
+    lang: "fr",
+  );
+
+  /*
+  Exemple fichier json update
+  [
+    {
+      "version": "2.5.0+2",
+      "mandatory": false,
+      "beta": false,
+      "title": "Update 2.5.0",
+      "message": {
+        "fr": "Correction de bugs et nouvelles fonctionnalités.",
+        "en": "New features and bug fixes."
+      },
+      "url": {
+        "macos": "https://github.com/mickbad/",
+        "linux": "https://github.com/mickbad/",
+        "windows": "https://github.com/mickbad/"
+      }
+    }
+  ]
+   */
+
+  // AppUpdateChecker.textUpdateAvailable = allTranslations.text("update_manager_new_available");
+  // AppUpdateChecker.textLater = allTranslations.text("update_manager_dialog_later");
+  // AppUpdateChecker.textUpdate = allTranslations.text("update_manager_dialog_update");
+  // AppUpdateChecker.textCurrentVersion = allTranslations.text("update_manager_current_version");
+  // AppUpdateChecker.textBetaLabel = allTranslations.text("update_manager_display_beta");
+
+  // version courante
+  final (_, versionString) = await AppUpdateChecker.getCurrentVersion();
+  ToolsConfigApp.logger.i("** Current version: $versionString");
 
   ///
   /// Configuration de la fenêtre
@@ -529,9 +574,7 @@ This is a paragraph.
             SoundFx.playUserDisconnected();
 
             // lecture des fichiers
-            final files = await ToolsHelpers.userSimpleLoadFilesDialog(
-              allowMultiple: true,
-            );
+            final files = await ToolsHelpers.userSimpleLoadFilesDialog();
             for (final Map<String, dynamic> file in files) {
               ToolsConfigApp.logger.i("- File ${file["name"]}");
               ToolsConfigApp.logger

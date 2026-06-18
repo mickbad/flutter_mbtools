@@ -466,6 +466,7 @@ class _FullScreenPageState extends State<FullScreenPage> {
               dialogTitle: 'Please select an output file:',
               fileName: basename(imageDownloadedPathName),
               allowedExtensions: allowedExtensions,
+              bytes: Uint8List(0),
             );
           } else {
             // localisation du fichier sur le mobile

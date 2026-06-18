@@ -11,6 +11,7 @@ export 'services/connectitivity_status.dart';
 export 'services/log.dart';
 export 'services/apidev.dart';
 export 'services/MatomoAnalyticsHelper.dart';
+export 'services/updater.dart';
 
 // les controleurs
 export 'SettingsService.dart';

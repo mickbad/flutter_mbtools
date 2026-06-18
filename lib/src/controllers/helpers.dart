@@ -1410,13 +1410,16 @@ class ToolsHelpers {
     List<String>? allowedExtensions,
     bool lockParentWindow = false,
   }) async {
+    final realFileName = fileName == null ? "" : p.basename(fileName);
+    final Uint8List bytes = Uint8List(0);
     return await FilePicker.saveFile(
       dialogTitle: dialogTitle ?? 'Please select an output file:',
-      fileName: fileName != null ? p.basename(fileName) : null,
+      fileName: realFileName,
       initialDirectory: initialDirectory,
       type: (allowedExtensions != null) ? FileType.custom : FileType.any,
       allowedExtensions: allowedExtensions,
       lockParentWindow: lockParentWindow,
+      bytes: bytes,
     );
   }
 
@@ -1441,7 +1444,7 @@ class ToolsHelpers {
     String? dialogTitle,
     String? initialDirectory,
     List<String>? allowedExtensions,
-    bool allowMultiple = false,
+    // bool allowMultiple = false,
     bool includeResultBytes = false,
     List<String> sizeLabels = const ['octets', 'Ko', 'Mo', 'Go', 'To'],
   }) async {
@@ -1450,7 +1453,7 @@ class ToolsHelpers {
       initialDirectory: initialDirectory,
       type: (allowedExtensions != null) ? FileType.custom : FileType.any,
       allowedExtensions: allowedExtensions,
-      allowMultiple: allowMultiple,
+      // allowMultiple: allowMultiple,
     );
 
     if (result == null) {

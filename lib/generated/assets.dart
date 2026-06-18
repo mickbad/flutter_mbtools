@@ -31,35 +31,47 @@ class $AssetsImagesGen {
   const $AssetsImagesGen();
 
   final $AssetsNotificationsGen notifications = const $AssetsNotificationsGen();
-  final AssetGenImage etonnant =
-      const AssetGenImage('assets/images/etonnant.gif');
+  final AssetGenImage etonnant = const AssetGenImage(
+    'assets/images/etonnant.gif',
+  );
 }
 
 class $AssetsNotificationsGen {
   const $AssetsNotificationsGen();
 
   final AssetGenImage windowsNotifications0 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-0.ico');
+    'assets/images/notifications/windows-notifications-0.ico',
+  );
   final AssetGenImage windowsNotifications1 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-1.ico');
+    'assets/images/notifications/windows-notifications-1.ico',
+  );
   final AssetGenImage windowsNotifications2 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-2.ico');
+    'assets/images/notifications/windows-notifications-2.ico',
+  );
   final AssetGenImage windowsNotifications3 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-3.ico');
+    'assets/images/notifications/windows-notifications-3.ico',
+  );
   final AssetGenImage windowsNotifications4 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-4.ico');
+    'assets/images/notifications/windows-notifications-4.ico',
+  );
   final AssetGenImage windowsNotifications5 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-5.ico');
+    'assets/images/notifications/windows-notifications-5.ico',
+  );
   final AssetGenImage windowsNotifications6 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-6.ico');
+    'assets/images/notifications/windows-notifications-6.ico',
+  );
   final AssetGenImage windowsNotifications7 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-7.ico');
+    'assets/images/notifications/windows-notifications-7.ico',
+  );
   final AssetGenImage windowsNotifications8 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-8.ico');
+    'assets/images/notifications/windows-notifications-8.ico',
+  );
   final AssetGenImage windowsNotifications9 = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-9.ico');
+    'assets/images/notifications/windows-notifications-9.ico',
+  );
   final AssetGenImage windowsNotifications9p = const AssetGenImage(
-      'assets/images/notifications/windows-notifications-9p.ico');
+    'assets/images/notifications/windows-notifications-9p.ico',
+  );
 }
 
 class AssetGenImage {
@@ -123,15 +135,8 @@ class AssetGenImage {
     );
   }
 
-  ImageProvider provider({
-    AssetBundle? bundle,
-    String? package,
-  }) {
-    return AssetImage(
-      _assetName,
-      bundle: bundle,
-      package: package,
-    );
+  ImageProvider provider({AssetBundle? bundle, String? package}) {
+    return AssetImage(_assetName, bundle: bundle, package: package);
   }
 
   Widget custom({

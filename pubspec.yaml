@@ -1,6 +1,6 @@
 name: mbtools
 description: "Ensemble d'outils dart/flutter."
-version: 1.2.17+1
+version: 1.2.18+1
 homepage: https://www.ricochets.dev
 
 environment:
@@ -13,11 +13,11 @@ dependencies:
 
   # gestion de l'application
   connectivity_plus: ^7.1.1
-  package_info_plus: ^9.0.1
-  device_info_plus: ^12.4.0
-  path_provider: ^2.1.5
+  package_info_plus: ^10.1.0
+  device_info_plus: ^13.1.0
+  path_provider: ^2.1.6
   markdown: ^7.3.1
-  wakelock_plus: ^1.5.2
+  wakelock_plus: ^1.6.1
 
   # markdown
   # STOPPED : TODO Change this very soon
@@ -45,7 +45,7 @@ dependencies:
 
   # gestion de la fenêtre
   window_manager: ^0.5.1
-  another_flushbar: ^1.12.32
+  another_flushbar: ^2.2.4
   windows_taskbar: ^1.1.2
 
   # gestion de la sortie de veille
@@ -64,8 +64,8 @@ dependencies:
   toastification: ^3.2.0
 
   # outils design/utilitaire
-  share_plus: ^12.0.2
-  file_picker: ^11.0.2
+  share_plus: ^13.1.0
+  file_picker: ^12.0.0-beta.7
 #    git:
 #      url: https://github.com/miguelpruivo/flutter_file_picker.git
 
@@ -78,7 +78,7 @@ dependencies:
 #      path: packages/pasteboard
 
   # gestion des sons
-  audioplayers: ^6.6.0
+  audioplayers: ^6.7.1
   # just_audio: ^0.9.42
   # just_audio_windows: ^0.2.2
   # just_audio_mpv: ^0.1.7 # TODO : voir https://pub.dev/packages/just_audio_media_kit please !!!!!!
