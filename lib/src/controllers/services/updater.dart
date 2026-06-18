@@ -172,7 +172,7 @@ class AppUpdateChecker {
       // récupération des éléments du package courant
       final (PackageInfo info, String versionString) = await getCurrentVersion();
       final currentVersion = info.version;
-      final currentBuild = int.tryParse(info.buildNumber) ?? 0;
+      final currentBuild = int.tryParse(info.buildNumber) ?? 1;
 
       // log
       ToolsConfigApp.logger.i("[AppUpdateChecker] Current version: $currentVersion+$currentBuild");
