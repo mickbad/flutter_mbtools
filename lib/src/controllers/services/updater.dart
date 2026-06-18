@@ -201,7 +201,7 @@ class AppUpdateChecker {
   static Future<(PackageInfo, String)> getCurrentVersion() async {
     final info = await PackageInfo.fromPlatform();
     final currentVersion = info.version;
-    final currentBuild = int.tryParse(info.buildNumber) ?? 0;
+    final currentBuild = int.tryParse(info.buildNumber) ?? 1;
 
     return (info, "$currentVersion+$currentBuild");
   }
@@ -335,7 +335,7 @@ class AppUpdateChecker {
       // récupération de la version target
       final versionParts = currentTarget.version.split('+');
       final remoteCurrentVersion = versionParts[0];
-      final remoteCurrentBuild = versionParts.length > 1 ? int.tryParse(versionParts[1]) ?? 0 : 0;
+      final remoteCurrentBuild = versionParts.length > 1 ? int.tryParse(versionParts[1]) ?? 1 : 1;
 
       // Récupère l'URL de téléchargement pour la plateforme courante
       final platformKey = _platformKey();
@@ -361,7 +361,7 @@ class AppUpdateChecker {
 
     // final versionParts = target.version.split('+');
     // final remoteVersion = versionParts[0];
-    // final remoteBuild = versionParts.length > 1 ? int.tryParse(versionParts[1]) ?? 0 : 0;
+    // final remoteBuild = versionParts.length > 1 ? int.tryParse(versionParts[1]) ?? 1 : 1;
     //
     // if (!_isNewer(remoteVersion, remoteBuild, currentVersion, currentBuild)) {
     //   throw Exception('No update available!');
