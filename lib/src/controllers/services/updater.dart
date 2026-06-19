@@ -231,7 +231,7 @@ class AppUpdateChecker {
       throw Exception('No version found in App Store data');
     }
 
-    if (_isNewer(storeVersion, 0, currentVersion, currentBuild)) {
+    if (_isNewer(storeVersion, 1, currentVersion, currentBuild)) {
       // log
       ToolsConfigApp.logger.i('[AppUpdateChecker] Update available: $storeVersion');
 
@@ -272,7 +272,7 @@ class AppUpdateChecker {
       throw Exception('No version found in Play Store data');
     }
 
-    if (_isNewer(storeVersion, 0, currentVersion, currentBuild)) {
+    if (_isNewer(storeVersion, 1, currentVersion, currentBuild)) {
       // log
       ToolsConfigApp.logger.i('[AppUpdateChecker] Update available: $storeVersion');
 
