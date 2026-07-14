@@ -925,6 +925,47 @@ class UpdateDownloadResults {
   }
 
   ///
+  /// Demande à l'utilisateur l'emplacement de la sauvegarde du fichier
+  /// téléchargé
+  ///
+  Future<void> askToSaveDestination({
+    String? dialogTitle,
+    String successLabel = "Update file has been saved."
+  }) async {
+     // nom par défaut si rien ne colle
+    final defaultFileName = (Platform.isWindows) ? "ricochets-download.exe": "ricochets-download.tmp";
+
+    // Récupère le dernier élément du chemin (https://domain/path/to/test.exe -> test.exe)
+    var fileName = uri.pathSegments.isNotEmpty
+        ? uri.pathSegments.last
+        : defaultFileName;
+
+    // Sécurité : évite un nom vide
+    if (fileName.isEmpty) {
+      fileName = defaultFileName;
+    }
+
+    // demande de localisation de la sauvegarde
+    final path = await ToolsHelpers.userSimpleSaveFileDialog(
+      dialogTitle: dialogTitle,
+      fileName: fileName,
+    );
+
+    if (path == null) {
+      return;
+    }
+
+    // sauvegarde du contenu dans le disque
+    saveTo(path, setExecuteMode: true);
+
+    // information utilisateur
+    ToolsHelpers.showSnackbarContext(
+      successLabel,
+      success: true,
+    );
+  }
+
+  ///
   /// Exécute un fichier comme un programme autonome
   ///
   Future<void> saveAndExecute({

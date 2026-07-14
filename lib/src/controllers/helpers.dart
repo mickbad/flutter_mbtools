@@ -390,7 +390,14 @@ class ToolsHelpers {
   ///
   /// Détermine si le device a un notch
   ///
-  static bool hasNotch(BuildContext context) {
+  static bool hasNotch({BuildContext? context}) {
+    // recherche de contexte
+    context ??= ToolsConfigApp.appNavigatorKey.currentContext;
+    if (context == null) {
+      ToolsConfigApp.logger.w("no context given or ToolsConfigApp.appNavigatorKey not set!");
+      return false;
+    }
+
     final padding = MediaQuery.of(context).viewPadding;
     return padding.top != 0.0 ||
         padding.bottom != 0.0 ||
@@ -1087,8 +1094,17 @@ class ToolsHelpers {
   ///
   /// Affichage d'une snackbar
   ///
-  static void showSnackbar(BuildContext context, String text,
-      {int duration = 1000}) {
+  static void showSnackbar(String text, {
+    BuildContext? context,
+    int duration = 1000,
+  }) {
+    // recherche de contexte
+    context ??= ToolsConfigApp.appNavigatorKey.currentContext;
+    if (context == null) {
+      ToolsConfigApp.logger.w("no context given or ToolsConfigApp.appNavigatorKey not set!");
+      return;
+    }
+
     final snackBar = SnackBar(
       content: Text(text,
           style: const TextStyle(
@@ -1105,9 +1121,8 @@ class ToolsHelpers {
   ///
   /// Affichage d'un snackbar sans scaffold !
   ///
-  static void showSnackbarContext(
-    BuildContext context,
-    String text, {
+  static void showSnackbarContext(String text, {
+    BuildContext? context,
     String? title,
     bool success = true,
     int duration = 3000,
@@ -1115,6 +1130,13 @@ class ToolsHelpers {
     bool isDismissible = true,
     bool blockBackgroundInteraction = false,
   }) {
+    // recherche de contexte
+    context ??= ToolsConfigApp.appNavigatorKey.currentContext;
+    if (context == null) {
+      ToolsConfigApp.logger.w("no context given or ToolsConfigApp.appNavigatorKey not set!");
+      return;
+    }
+
     // on établit une icône suivant la situation du succès
     Widget icon = (success)
         ? Icon(
@@ -1170,7 +1192,7 @@ class ToolsHelpers {
   /// Toast flash
   ///
   static String toastMe({
-    required BuildContext context,
+    BuildContext? context,
     String? title,
     dynamic message = "Merci de votre action",
     ToastFlashType flashType = ToastFlashType.success,
@@ -1179,6 +1201,13 @@ class ToolsHelpers {
     bool stayDisplay = false,
     bool userCanClose = true,
   }) {
+    // recherche de contexte
+    context ??= ToolsConfigApp.appNavigatorKey.currentContext;
+    if (context == null) {
+      ToolsConfigApp.logger.w("no context given or ToolsConfigApp.appNavigatorKey not set!");
+      return "";
+    }
+
     // positionnement
     var localFlashPosition;
     switch (flashPosition) {
@@ -1328,7 +1357,7 @@ class ToolsHelpers {
   /// Les différents toast
   ///
   static String toastMeSuccess({
-    required BuildContext context,
+    BuildContext? context,
     String? title,
     required dynamic message,
     ToastFlashPosition flashPosition = ToastFlashPosition.center,
@@ -1347,7 +1376,7 @@ class ToolsHelpers {
   );
 
   static String toastMeError({
-    required BuildContext context,
+    BuildContext? context,
     String? title,
     required dynamic message,
     ToastFlashPosition flashPosition = ToastFlashPosition.center,
@@ -1366,7 +1395,7 @@ class ToolsHelpers {
   );
 
   static String toastMeWarning({
-    required BuildContext context,
+    BuildContext? context,
     String? title,
     required dynamic message,
     ToastFlashPosition flashPosition = ToastFlashPosition.center,
@@ -1385,7 +1414,7 @@ class ToolsHelpers {
   );
 
   static String toastMeInfo({
-    required BuildContext context,
+    BuildContext? context,
     String? title,
     required dynamic message,
     ToastFlashPosition flashPosition = ToastFlashPosition.center,
@@ -1538,8 +1567,6 @@ class ToolsHelpers {
     String? dialogTitle,
     String? initialDirectory,
     List<String>? allowedExtensions,
-    // bool allowMultiple = false,
-    bool includeResultBytes = false,
     List<String> sizeLabels = const ['octets', 'Ko', 'Mo', 'Go', 'To'],
   }) async {
     final result = await FilePicker.pickFiles(
@@ -1567,9 +1594,9 @@ class ToolsHelpers {
         "xfile": filename.xFile,
       };
 
-      if (includeResultBytes) {
-        data["bytes"] = filename.bytes;
-      }
+      // if (includeResultBytes) {
+      //   data["bytes"] = filename.bytes;
+      // }
 
       output.add(data);
     }
@@ -1585,13 +1612,20 @@ class ToolsHelpers {
   /// Boîte de dialogue d'une demande de confirmation utilisateur en fonction
   /// du device (ios, android, ...)
   ///
-  static Future<bool> showConfirmDialog(
-      BuildContext context, {
-        String? title,
-        required String message,
-        String validTextLabel = "Confirmer",
-        String cancelTextLabel = "Annuler",
-      }) async {
+  static Future<bool> showConfirmDialog({
+    BuildContext? context,
+    String? title,
+    required String message,
+    String validTextLabel = "Confirmer",
+    String cancelTextLabel = "Annuler",
+  }) async {
+    // recherche de contexte
+    context ??= ToolsConfigApp.appNavigatorKey.currentContext;
+    if (context == null) {
+      ToolsConfigApp.logger.w("no context given or ToolsConfigApp.appNavigatorKey not set!");
+      return false;
+    }
+
     title ??= ToolsConfigApp.appName;
 
     if (Platform.isIOS || Platform.isMacOS) {

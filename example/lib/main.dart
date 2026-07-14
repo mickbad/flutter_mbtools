@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -117,7 +118,6 @@ Future main() async {
 
       // demande confirmation de la mise à jour
       final confirm = await ToolsHelpers.showConfirmDialog(
-        ToolsConfigApp.appNavigatorKey.currentContext!,
         message: 'Update downloaded, execute?\n\nThe application will be closed while the update is installed.',
         validTextLabel: "Launch update",
         cancelTextLabel: "Cancel",
@@ -126,18 +126,25 @@ Future main() async {
 
       // procédure d'installation
       try {
-        // exécution du fichier de mise à jour
-        await results.saveAndExecute(
-          quitSoftware: true, // default: true
-          delayQuit: const Duration(milliseconds: 1520), // default: 2 seconds
-        );
+        if (Platform.isLinux) {
+          // demande de sauvegarde du fichier téléchargé
+          await results.askToSaveDestination();
+        }
+
+        else {
+          // plateforme pouvant exécuter un fichier d'installation
+          // exécution du fichier de mise à jour
+          await results.saveAndExecute(
+            quitSoftware: true, // default: true
+            delayQuit: const Duration(milliseconds: 1520), // default: 2 seconds
+          );
+        }
+
       } catch (e) {
         ToolsConfigApp.logger.e("Updater Error: ${e.toString()}");
 
         try {
-          BuildContext context = ToolsConfigApp.appNavigatorKey.currentContext!;
           ToolsHelpers.showSnackbarContext(
-            context,
             "Updater Error: ${e.toString()}",
             success: false,
           );
@@ -437,7 +444,6 @@ This is a paragraph.
                   onTap: () {
                     debugPrint("J'accepte");
                     ToolsHelpers.showSnackbarContext(
-                      context,
                       "J'accepte",
                       isDismissible: true,
                       blockBackgroundInteraction: true,
@@ -478,7 +484,6 @@ This is a paragraph.
                   onTap: () {
                     debugPrint("Je refuse");
                     ToolsHelpers.showSnackbarContext(
-                      context,
                       "Je refuse",
                       success: false,
                       isDismissible: false,
@@ -541,8 +546,7 @@ This is a paragraph.
                     ),
                     showGlowBorder: true,
                     onActionButton: () async {
-                      ToolsHelpers.showSnackbarContext(
-                          context, "Welcome here !");
+                      ToolsHelpers.showSnackbarContext("Welcome here !");
                       setState(() {
                         txtButtonContent = "CLICKED !";
                       });
@@ -561,8 +565,7 @@ This is a paragraph.
                     iconBackgroundColor: ToolsConfigApp.appGreenColor,
                     onActionButton: () async {
                       final String text = txtButtonController.text;
-                      ToolsHelpers.showSnackbarContext(
-                          context, "You write: $text!");
+                      ToolsHelpers.showSnackbarContext("You write: $text!");
                     },
                     textFieldEnabled: true,
                     textFieldController: txtButtonController,
