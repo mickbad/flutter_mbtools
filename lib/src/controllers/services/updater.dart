@@ -610,7 +610,7 @@ class _MaterialUpdateDialog extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [cs.primaryContainer, cs.primary.withOpacity(0.75)],
+                colors: [cs.primaryContainer, cs.primary.withValues(alpha: .75)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -966,7 +966,7 @@ class UpdateDownloadResults {
       );
     }
     catch(e) {
-      // on est empêché d'exécuté le logiciel, on ouvrre avec la méthode système
+      // on est empêché d'exécuter le logiciel, on ouvre avec la méthode système
       try {
         ToolsConfigApp.logger.w("[AppUpdateChecker] failed to execute update: $e");
         ToolsConfigApp.logger.i("[AppUpdateChecker] try to open update!");
@@ -1021,7 +1021,13 @@ Future<void> _launch(String url, {
   try {
     // récupération du contenu de la ressource
     uri = Uri.parse(url);
-    final response = await http.get(uri);
+    final response = await http.get(
+      uri,
+      headers: {
+        'User-Agent': ToolsHelpers.randomUserAgent(),
+        'Accept-Language': 'fr-FR,fr;q=0.9',
+      },
+    );
 
     // récupération des données
     statusCode = response.statusCode;
