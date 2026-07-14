@@ -183,6 +183,33 @@ class ToolsConfigApp {
   }
 
   ///
+  /// Détection processeur MacOS
+  ///
+  bool get isMacOsIntel64 => Platform.isMacOS && Platform.version.contains('x64');
+  bool get isMacOsArm => Platform.isMacOS && Platform.version.contains('arm64');
+  bool get isMacOsIntel => isMacOsIntel64;
+
+  ///
+  /// Détection processeur Windows
+  ///
+  bool get isWindowsIntel64 => Platform.isWindows && Platform.version.contains('x64');
+  bool get isWindowsArm64 => Platform.isWindows && Platform.version.contains('arm64');
+  bool get isWindowsX86 => Platform.isWindows && Platform.version.contains('ia32');
+
+  bool get isWindowsArm => isWindowsArm64;
+  bool get isWindowsIntel => isWindowsIntel64 || isWindowsX86;
+
+  ///
+  /// Détection processeur Linux
+  ///
+  bool get isLinuxIntel64 => Platform.isLinux && Platform.version.contains('x64');
+  bool get isLinuxArm64 => Platform.isLinux && Platform.version.contains('arm64');
+  bool get isLinuxArm32 => Platform.isLinux && Platform.version.contains('arm');
+
+  bool get isLinuxArm => isLinuxArm64 || isLinuxArm32;
+  bool get isLinuxIntel => isLinuxIntel64;
+
+  ///
   /// Gestion de l'état de l'application desktop niveau sommeil, réveil du pc
   ///
   static void setApplicationDesktopState({

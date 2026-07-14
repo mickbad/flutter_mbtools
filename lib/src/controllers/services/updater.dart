@@ -13,35 +13,77 @@ import '../../../mbtools.dart';
 // ---------------------------------------------------------------------------
 // AppUpdateChecker
 // ---------------------------------------------------------------------------
-// Classe statique pour vérifier les mises à jour de l'application.
-//
-// USAGE DANS main() :
-//   final navKey = GlobalKey<NavigatorState>();
-//   AppUpdateChecker.init(
-//     navigatorKey : navKey,
-//     jsonUrl      : 'https://example.com/updates.json', // desktop/web
-//     appStoreId   : '123456789',                        // iOS
-//     androidId    : 'com.example.app',                  // Android
-//     beta         : false,
-//     lang         : 'fr',
-//     autoStartCheck : true,
-//   );
-//   runApp(MyApp(navigatorKey: navKey));
-//
-// FORMAT JSON attendu (tableau, versions du plus récent au plus ancien) :
-//   [
-//     {
-//       "version"   : "2.5.0+2",
-//       "mandatory" : false,
-//       "beta"      : true,
-//       "title"     : "Titre universel",           // string OU {"fr":"…","en":"…"}
-//       "message"   : {"fr": "…", "en": "…"},     // string OU dict
-//       "url"       : {"macos":"…","linux":"…","windows":"…"}
-//     },
-//     …
-//   ]
+/*
+  Classe statique pour vérifier les mises à jour de l'application.
+
+  USAGE DANS main() :
+    final navKey = GlobalKey<NavigatorState>();
+    AppUpdateChecker.init(
+      navigatorKey : navKey,
+      onJsonDownloadResults: (UpdateDownloadResults results) {}, // si null, l'url est envoyé au navigateur de l'utilisateur
+      jsonUrl      : 'https://example.com/updates.json', // desktop/web
+      appStoreId   : '123456789',                        // iOS
+      androidId    : 'com.example.app',                  // Android
+      beta         : false,
+      lang         : 'fr',
+      autoStartCheck : true,
+    );
+    runApp(MyApp(navigatorKey: navKey));
+
+  FORMAT JSON attendu (tableau, versions du plus récent au plus ancien) :
+    [
+      {
+        "version"   : "2.5.0+2",
+        "mandatory" : false,
+        "beta"      : true,
+        "title"     : "Titre universel",           // string OU {"fr":"…","en":"…"}
+        "message"   : {"fr": "…", "en": "…"},     // string OU dict
+        "url"       : {"macos":"…","linux":"…","windows":"…"}
+      },
+      …
+    ]
+
+  dans la fonction de rappel onJsonDownloadResults, on peut traiter les données téléchargés
+  ou alors directement lancer l'installation du logiciel :
+
+    AppUpdateChecker.init(
+        navigatorKey: ToolsConfigApp.appNavigatorKey,
+        jsonUrl: "http://127.0.0.1/mbtools-update.json",
+        beta: ToolsConfigApp.preferences.get("updates_beta_enabled", false) as bool,
+        autoStartCheck: ToolsConfigApp.preferences.get("updates_auto_enabled", false) as bool,
+        lang: "en",
+
+        // on télécharge et on exécute le fichier de mise à jour
+        onJsonDownloadResults: (results) async {
+          ToolsConfigApp.logger.i("Update found in \"${results.url}\"");
+
+          try {
+            // exécution du fichier de mise à jour puis quitte le programme
+            await results.saveAndExecute(
+              quitSoftware: true, // default: true
+              delayQuit: const Duration(seconds: 3), // default: 2 seconds
+            );
+          } catch (e) {
+            ToolsConfigApp.logger.e("Updater Error: ${e.toString()}");
+
+            try {
+              BuildContext context = ToolsConfigApp.appNavigatorKey.currentContext!;
+              ToolsHelpers.showSnackbarContext(
+                context,
+                "Updater Error: ${e.toString()}",
+                success: false,
+              );
+            } catch(_) {}
+          }
+        }
+      );
+ */
 // ---------------------------------------------------------------------------
 
+/// fonction de rappel pour un téléchargement de contenu d'un fichier JSON
+typedef JsonDownloadResults = void Function(UpdateDownloadResults results);
+
+/// class updater
 class AppUpdateChecker {
   // -------------------------------------------------------------------------
   // Configuration
@@ -52,6 +94,7 @@ class AppUpdateChecker {
 
   /// URL du fichier JSON de versions (desktop / web)
   static String? _jsonUrl;
+  static JsonDownloadResults? _onJsonDownloadResults;
 
   /// Identifiant numérique App Store (iOS / iPadOS / macOS via App Store)
   static String? _appStoreId;
@@ -88,6 +131,7 @@ class AppUpdateChecker {
   /// À appeler dans main(), AVANT runApp().
   ///
   /// [navigatorKey]   Clef du Navigator global (injectée dans MaterialApp / CupertinoApp).
+  /// [onJsonDownloadResults] Fonction de rappel pour un téléchargement de contenu d'un fichier JSON.
   /// [jsonUrl]        URL du JSON de versions, obligatoire pour desktop/web.
   /// [appStoreId]     Identifiant numérique App Store (iOS/iPadOS).
   /// [androidBundleId] Package name Android (com.example.app).
@@ -98,6 +142,7 @@ class AppUpdateChecker {
   /// [autoStartCheck] true → démarrer les checks automatiquement.
   static void init({
     required GlobalKey<NavigatorState> navigatorKey,
+    JsonDownloadResults? onJsonDownloadResults,
     String? jsonUrl,
     String? appStoreId,
     String? androidBundleId,
@@ -115,6 +160,7 @@ class AppUpdateChecker {
     _lang = lang;
     _initialDelay = initialDelay;
     _checkInterval = checkInterval;
+    _onJsonDownloadResults = onJsonDownloadResults;
 
     // On attend que l'arbre de widgets soit prêt avant de démarrer les checks.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -379,6 +425,7 @@ class AppUpdateChecker {
       isBeta: target.beta,
       mandatory: target.mandatory,
       downloadUrl: downloadUrl,
+      onJsonDownloadResults: _onJsonDownloadResults,
     );
   }
 
@@ -441,6 +488,7 @@ class AppUpdateChecker {
     required bool isBeta,
     required bool mandatory,
     required String downloadUrl,
+    JsonDownloadResults? onJsonDownloadResults,
   }) async {
     await _ready.future;
 
@@ -470,6 +518,7 @@ class AppUpdateChecker {
           isBeta: isBeta,
           mandatory: mandatory,
           downloadUrl: downloadUrl,
+          onJsonDownloadResults: onJsonDownloadResults,
         )
             : _MaterialUpdateDialog(
           title: title.isEmpty ? textUpdateAvailable : title,
@@ -479,6 +528,7 @@ class AppUpdateChecker {
           isBeta: isBeta,
           mandatory: mandatory,
           downloadUrl: downloadUrl,
+          onJsonDownloadResults: onJsonDownloadResults,
         ),
       ),
     );
@@ -531,6 +581,7 @@ class _MaterialUpdateDialog extends StatelessWidget {
   final bool isBeta;
   final bool mandatory;
   final String downloadUrl;
+  final JsonDownloadResults? onJsonDownloadResults;
 
   const _MaterialUpdateDialog({
     required this.title,
@@ -540,6 +591,7 @@ class _MaterialUpdateDialog extends StatelessWidget {
     required this.isBeta,
     required this.mandatory,
     required this.downloadUrl,
+    required this.onJsonDownloadResults,
   });
 
   @override
@@ -622,7 +674,7 @@ class _MaterialUpdateDialog extends StatelessWidget {
                 const SizedBox(width: 8),
                 FilledButton.icon(
                   onPressed: () {
-                    _launch(downloadUrl);
+                    _launch(downloadUrl, onJsonDownloadResults: onJsonDownloadResults);
 
                     // fermeture du dialogue seulement si la mise à jour n'est pas obligatoire
                     if (!mandatory) {
@@ -653,6 +705,7 @@ class _CupertinoUpdateDialog extends StatelessWidget {
   final bool isBeta;
   final bool mandatory;
   final String downloadUrl;
+  final JsonDownloadResults? onJsonDownloadResults;
 
   const _CupertinoUpdateDialog({
     required this.title,
@@ -662,6 +715,7 @@ class _CupertinoUpdateDialog extends StatelessWidget {
     required this.isBeta,
     required this.mandatory,
     required this.downloadUrl,
+    required this.onJsonDownloadResults,
   });
 
   @override
@@ -712,7 +766,7 @@ class _CupertinoUpdateDialog extends StatelessWidget {
         CupertinoDialogAction(
           isDefaultAction: true,
           onPressed: () {
-            _launch(downloadUrl);
+            _launch(downloadUrl, onJsonDownloadResults: onJsonDownloadResults);
 
             // fermeture du dialogue seulement si la mise à jour n'est pas obligatoire
             if (!mandatory) {
@@ -802,7 +856,207 @@ class _VersionBadge extends StatelessWidget {
 // Helper : ouvre l'URL de téléchargement
 // ---------------------------------------------------------------------------
 
-Future<void> _launch(String url) async {
+///
+/// Objet de récupération des contenus de fichiers téléchargé
+///
+class UpdateDownloadResults {
+  final Uri uri;
+  final String url;
+  final int statusCode;
+  final String? text;
+  final Uint8List bytes;
+  final Map<String, String> headers;
+  final String? err;
+
+  UpdateDownloadResults({
+    required this.uri,
+    required this.url,
+    required this.statusCode,
+    required this.bytes,
+    required this.headers,
+    this.text,
+    this.err,
+  });
+
+  bool get isSuccess => statusCode >= 200 && statusCode < 300 && err == null;
+
+  ///
+  /// Sauvegarde le contenu téléchargé dans un fichier avec auto création du
+  /// répertoire de stockage
+  ///
+  void saveTo(String path, {bool setExecuteMode = true}) {
+    if (!isSuccess) {
+      throw Exception("Saving failed: bad download: $err",);
+    }
+
+    ToolsConfigApp.logger.i("[AppUpdateChecker] try to save update in $path");
+
+    final file = File(path);
+
+    // suppression du fichier d'origine si existe
+    if (file.existsSync()) {
+      try {
+        file.deleteSync();
+      } catch(_) {}
+    }
+
+    // Création du dossier parent si nécessaire
+    final parent = file.parent;
+    if (!parent.existsSync()) {
+      parent.createSync(recursive: true);
+    }
+
+    // écriture
+    file.writeAsBytesSync(bytes);
+
+    // Ajout du droit d'exécution sur Unix
+    if (setExecuteMode && !Platform.isWindows) {
+      final result = Process.runSync(
+        'chmod',
+        ['+x', file.path],
+      );
+
+      if (result.exitCode != 0) {
+        throw Exception(
+          "Cannot set executable permission: ${result.stderr}",
+        );
+      }
+    }
+  }
+
+  ///
+  /// Exécute un fichier comme un programme autonome
+  ///
+  Future<void> saveAndExecute({
+    String? path,
+    List<String> arguments = const [],
+    bool quitSoftware = true,
+    Duration? delayQuit,
+  }) async {
+    // [path] est null, on détermine un lieu temporaire
+    if (path == null) {
+      // nom par défaut si rien ne colle
+      final defaultFileName = (Platform.isWindows) ? "ricochets-download.exe": "ricochets-download.tmp";
+
+      // Récupère le dernier élément du chemin (https://domain/path/to/test.exe -> test.exe)
+      var fileName = uri.pathSegments.isNotEmpty
+          ? uri.pathSegments.last
+          : defaultFileName;
+
+      // Sécurité : évite un nom vide
+      if (fileName.isEmpty) {
+        fileName = defaultFileName;
+      }
+
+      // fabrication du lien de sauvegarde
+      // path = await ToolsHelpers.realDownloadsOrTmpPathname(fileName);
+      path = "${Directory.systemTemp.path}${Platform.pathSeparator}$fileName";
+    }
+
+    // sauvegarde du contenu dans le disque
+    saveTo(path, setExecuteMode: true);
+
+    try {
+      // démarrage du process en mode détaché pour pouvoir interagir ensuite
+      ToolsConfigApp.logger.i("[AppUpdateChecker] try to execute update!");
+      await Process.start(
+        path,
+        arguments,
+        mode: ProcessStartMode.detached,
+      );
+    }
+    catch(e) {
+      // on est empêché d'exécuté le logiciel, on ouvrre avec la méthode système
+      try {
+        ToolsConfigApp.logger.w("[AppUpdateChecker] failed to execute update: $e");
+        ToolsConfigApp.logger.i("[AppUpdateChecker] try to open update!");
+        ToolsHelpers.openDocumentDesktopNative(path);
+      } catch(e2) {
+        throw Exception("Failed to execute or open $path");
+      }
+    }
+
+    // fermeture du logiciel courant après une durée déterminée
+    if (quitSoftware) {
+      Future.delayed(delayQuit ?? const Duration(seconds: 2), () {
+        ToolsConfigApp.logger.i("[AppUpdateChecker] Quit software after execute update!");
+        exit(0);
+      });
+    }
+  }
+}
+
+///
+/// Lancement d'un téléchargement d'une url
+/// si [onJsonDownloadResults] est null, on ouvre le navigateur par défaut de l'utilisateur
+/// pour récupérer la mise à jour ; l'utilisateur final est responsable du traitement
+/// Dans le cas contraire, la fonction de rappel est appelé après le téléchargement
+/// de l'url demandée pour que le développeur de l'outil puisse agir dans son
+/// logiciel.
+///
+Future<void> _launch(String url, {
+  required JsonDownloadResults? onJsonDownloadResults,
+}) async {
+  // mini check
   if (url.isEmpty) return;
-  ToolsHelpers.launchWeb(url: url);
+
+  // procédure de lanacement via le navigateur
+  if (onJsonDownloadResults == null) {
+    ToolsConfigApp.logger.i("[AppUpdateChecker] launch url update on browser!");
+    ToolsHelpers.launchWeb(url: url);
+    return;
+  }
+
+  /// procédure de téléchargement du contenu de l'url
+  // variables de récupération
+  Uri? uri;
+  int statusCode = 500;
+  Uint8List bytes = Uint8List.fromList([]);
+  String? text;
+  Map<String, String> headers = {};
+  String? err = "no connexion";
+
+  ToolsConfigApp.logger.i("[AppUpdateChecker] try to download update!");
+
+  try {
+    // récupération du contenu de la ressource
+    uri = Uri.parse(url);
+    final response = await http.get(uri);
+
+    // récupération des données
+    statusCode = response.statusCode;
+    bytes = response.bodyBytes;
+    headers = response.headers;
+
+    // Tentative de décodage texte
+    try {
+      text = response.body;
+    } catch (_) {
+      text = null;
+    }
+
+    // tout va bien
+    err = null;
+
+    ToolsConfigApp.logger.i("[AppUpdateChecker] download update success!");
+  }
+  catch (e) {
+    // erreur ?
+    ToolsConfigApp.logger.w("[AppUpdateChecker] failed to download update: $e");
+    err = e.toString();
+  }
+
+  // fabrication de la chaîne
+  final results = UpdateDownloadResults(
+    uri: uri ?? Uri.parse("http://localhost/"),
+    url: url,
+    statusCode: statusCode,
+    text: text,
+    bytes: bytes,
+    headers: headers,
+    err: err,
+  );
+
+  // lancement de la fonction de rappel
+  onJsonDownloadResults(results);
 }

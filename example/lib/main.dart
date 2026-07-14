@@ -105,10 +105,45 @@ Future main() async {
   ///
   AppUpdateChecker.init(
     navigatorKey: ToolsConfigApp.appNavigatorKey,
-    jsonUrl: "http://127.0.0.1/mbtools-update.json",
+    // jsonUrl: "http://127.0.0.1/mbtools-update.json",
+    jsonUrl: "https://raw.githubusercontent.com/mickbad/flutter_mbtools/refs/heads/main/flutter_mbtools_updater.json",
     beta: ToolsConfigApp.preferences.get("updates_beta_enabled", false) as bool,
     autoStartCheck: ToolsConfigApp.preferences.get("updates_auto_enabled", false) as bool,
     lang: "fr",
+
+    // on télécharge et on exécute le fichier de mise à jour
+    onJsonDownloadResults: (results) async {
+      ToolsConfigApp.logger.i("Update found in \"${results.url}\"");
+
+      // demande confirmation de la mise à jour
+      final confirm = await ToolsHelpers.showConfirmDialog(
+        ToolsConfigApp.appNavigatorKey.currentContext!,
+        message: 'Update downloaded, execute?\n\nThe application will be closed while the update is installed.',
+        validTextLabel: "Launch update",
+        cancelTextLabel: "Cancel",
+      );
+      if (!confirm) return;
+
+      // procédure d'installation
+      try {
+        // exécution du fichier de mise à jour
+        await results.saveAndExecute(
+          quitSoftware: true, // default: true
+          delayQuit: const Duration(milliseconds: 1520), // default: 2 seconds
+        );
+      } catch (e) {
+        ToolsConfigApp.logger.e("Updater Error: ${e.toString()}");
+
+        try {
+          BuildContext context = ToolsConfigApp.appNavigatorKey.currentContext!;
+          ToolsHelpers.showSnackbarContext(
+            context,
+            "Updater Error: ${e.toString()}",
+            success: false,
+          );
+        } catch(_) {}
+      }
+    }
   );
 
   /*

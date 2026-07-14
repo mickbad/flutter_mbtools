@@ -76,6 +76,71 @@ extension ToolsLaunchModeExtension on ToolsLaunchMode {
   }
 }
 
+///
+/// User-Agents plausibles et actuels (mi-2026), répartis entre Windows/macOS et Chrome, Firefox, Safari.
+///
+const userAgents = [
+  // Chrome - Windows
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+      'AppleWebKit/537.36 (KHTML, like Gecko) '
+      'Chrome/138.0.7204.101 Safari/537.36',
+
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+      'AppleWebKit/537.36 (KHTML, like Gecko) '
+      'Chrome/139.0.7258.66 Safari/537.36',
+
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+      'AppleWebKit/537.36 (KHTML, like Gecko) '
+      'Chrome/137.0.7151.120 Safari/537.36',
+
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+      'AppleWebKit/537.36 (KHTML, like Gecko) '
+      'Chrome/136.0.7103.114 Safari/537.36',
+
+  // Chrome - macOS
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) '
+      'AppleWebKit/537.36 (KHTML, like Gecko) '
+      'Chrome/139.0.7258.66 Safari/537.36',
+
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) '
+      'AppleWebKit/537.36 (KHTML, like Gecko) '
+      'Chrome/138.0.7204.101 Safari/537.36',
+
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7) '
+      'AppleWebKit/537.36 (KHTML, like Gecko) '
+      'Chrome/137.0.7151.120 Safari/537.36',
+
+  // Firefox - Windows
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) '
+      'Gecko/20100101 Firefox/140.0',
+
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) '
+      'Gecko/20100101 Firefox/139.0',
+
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) '
+      'Gecko/20100101 Firefox/138.0',
+
+  // Firefox - macOS
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 15.0; rv:140.0) '
+      'Gecko/20100101 Firefox/140.0',
+
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.7; rv:139.0) '
+      'Gecko/20100101 Firefox/139.0',
+
+  // Safari - macOS
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) '
+      'AppleWebKit/605.1.15 (KHTML, like Gecko) '
+      'Version/18.0 Safari/605.1.15',
+
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 15_1) '
+      'AppleWebKit/605.1.15 (KHTML, like Gecko) '
+      'Version/18.1 Safari/605.1.15',
+
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7) '
+      'AppleWebKit/605.1.15 (KHTML, like Gecko) '
+      'Version/17.6 Safari/605.1.15',
+];
+
 
 ///
 /// Outils helpers
@@ -89,6 +154,17 @@ class ToolsHelpers {
   ///
   /// Tools : get real pathname
   ///
+  static Future<String> realDownloadsOrTmpPathname(String pathname) async {
+    // get download or tmp path
+    Directory appDocumentsDir = await getDownloadsDirectory() ?? Directory.systemTemp;
+
+    // construct pathname
+    return p.join(
+      appDocumentsDir.path,
+      pathname,
+    );
+  }
+
   static Future<String> realAppDocumentsPathname(String pathname) async {
     // get documents path
     final Directory appDocumentsDir = await getApplicationDocumentsDirectory();
@@ -123,6 +199,19 @@ class ToolsHelpers {
       myPath = myPath.replaceAll("/", "\\");
     }
     return myPath;
+  }
+
+  ///
+  /// Ouvrir un document avec l'application par défaut
+  ///
+  static Future<void> openDocumentDesktopNative(String path) async {
+    if (Platform.isMacOS) {
+      await Process.run('open', [path]);
+    } else if (Platform.isWindows) {
+      await Process.run('explorer', [path]);
+    } else if (Platform.isLinux) {
+      await Process.run('xdg-open', [path]);
+    }
   }
 
   ///
@@ -312,6 +401,11 @@ class ToolsHelpers {
   // ---------------------------------------------------------------------------
   // - Gestion des URLs
   // ---------------------------------------------------------------------------
+
+  ///
+  /// User agent
+  ///
+  static String randomUserAgent() => userAgents[Random().nextInt(userAgents.length)];
 
   ///
   /// Validation d'une url

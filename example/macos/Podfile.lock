@@ -4,14 +4,11 @@ PODS:
   - FlutterMacOS (1.0.0)
   - local_notifier (0.1.0):
     - FlutterMacOS
-  - screen_retriever_macos (0.0.1):
-    - FlutterMacOS
 
 DEPENDENCIES:
   - flutter_desktop_sleep (from `Flutter/ephemeral/.symlinks/plugins/flutter_desktop_sleep/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - local_notifier (from `Flutter/ephemeral/.symlinks/plugins/local_notifier/macos`)
-  - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
 
 EXTERNAL SOURCES:
   flutter_desktop_sleep:
@@ -20,14 +17,11 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
   local_notifier:
     :path: Flutter/ephemeral/.symlinks/plugins/local_notifier/macos
-  screen_retriever_macos:
-    :path: Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos
 
 SPEC CHECKSUMS:
   flutter_desktop_sleep: d7e29bb5c2944a0db954674f53ad190b79a7d69d
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   local_notifier: e9506bc66fc70311e8bc7291fb70f743c081e4ff
-  screen_retriever_macos: 776e0fa5d42c6163d2bf772d22478df4b302b161
 
 PODFILE CHECKSUM: 9ebaf0ce3d369aaa26a9ea0e159195ed94724cf3
 
