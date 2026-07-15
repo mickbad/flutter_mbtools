@@ -120,6 +120,7 @@ class AppUpdateChecker {
   static String textUpdate = 'Update Now!';
   static String textCurrentVersion = 'Current';
   static String textBetaLabel = 'beta';
+  static String textApplicationClosedInformation = "The application will close so the update can be installed.";
 
   // options
   static bool _isDialogDisplay = false;
@@ -674,7 +675,11 @@ class _MaterialUpdateDialog extends StatelessWidget {
                 const SizedBox(width: 8),
                 FilledButton.icon(
                   onPressed: () {
-                    _launch(downloadUrl, onJsonDownloadResults: onJsonDownloadResults);
+                    _launch(
+                      downloadUrl,
+                      onJsonDownloadResults: onJsonDownloadResults,
+                      mandatory: mandatory,
+                    );
 
                     // fermeture du dialogue seulement si la mise à jour n'est pas obligatoire
                     if (!mandatory) {
@@ -766,7 +771,11 @@ class _CupertinoUpdateDialog extends StatelessWidget {
         CupertinoDialogAction(
           isDefaultAction: true,
           onPressed: () {
-            _launch(downloadUrl, onJsonDownloadResults: onJsonDownloadResults);
+            _launch(
+              downloadUrl,
+              onJsonDownloadResults: onJsonDownloadResults,
+              mandatory: mandatory,
+            );
 
             // fermeture du dialogue seulement si la mise à jour n'est pas obligatoire
             if (!mandatory) {
@@ -860,6 +869,7 @@ class _VersionBadge extends StatelessWidget {
 /// Objet de récupération des contenus de fichiers téléchargé
 ///
 class UpdateDownloadResults {
+  final bool mandatory;
   final Uri uri;
   final String url;
   final int statusCode;
@@ -869,6 +879,7 @@ class UpdateDownloadResults {
   final String? err;
 
   UpdateDownloadResults({
+    required this.mandatory,
     required this.uri,
     required this.url,
     required this.statusCode,
@@ -945,14 +956,26 @@ class UpdateDownloadResults {
       fileName = defaultFileName;
     }
 
-    // demande de localisation de la sauvegarde
-    final path = await ToolsHelpers.userSimpleSaveFileDialog(
-      dialogTitle: dialogTitle,
-      fileName: fileName,
-    );
+    String? path;
+    while(true) {
+      // demande de localisation de la sauvegarde
+      path = await ToolsHelpers.userSimpleSaveFileDialog(
+        dialogTitle: dialogTitle,
+        fileName: fileName,
+      );
 
-    if (path == null) {
-      return;
+      if (path == null) {
+        if (!mandatory) {
+          // on n'est pas sur une mise à jour obligatoire
+          return;
+        } else {
+          // on est sur une mise à jour obligatoire : on repose la question
+          continue;
+        }
+      }
+
+      // fin de transaction
+      break;
     }
 
     // sauvegarde du contenu dans le disque
@@ -963,6 +986,19 @@ class UpdateDownloadResults {
       successLabel,
       success: true,
     );
+
+    // auto fermeture si la mise à jour est obligatoire
+    if (mandatory) {
+      // message utilisateur
+      await Future.delayed(const Duration(milliseconds: 1500));
+      ToolsHelpers.showSnackbarContext(
+        AppUpdateChecker.textApplicationClosedInformation,
+      );
+
+      await Future.delayed(const Duration(seconds: 3));
+      ToolsConfigApp.logger.i("[AppUpdateChecker] Quit software after execute update!");
+      exit(0);
+    }
   }
 
   ///
@@ -1023,6 +1059,10 @@ class UpdateDownloadResults {
 
     // fermeture du logiciel courant après une durée déterminée
     if (quitSoftware) {
+      ToolsHelpers.showSnackbarContext(
+        AppUpdateChecker.textApplicationClosedInformation,
+      );
+
       Future.delayed(delayQuit ?? const Duration(seconds: 2), () {
         ToolsConfigApp.logger.i("[AppUpdateChecker] Quit software after execute update!");
         exit(0);
@@ -1041,6 +1081,7 @@ class UpdateDownloadResults {
 ///
 Future<void> _launch(String url, {
   required JsonDownloadResults? onJsonDownloadResults,
+  bool mandatory = false,
 }) async {
   // mini check
   if (url.isEmpty) return;
@@ -1099,6 +1140,7 @@ Future<void> _launch(String url, {
 
   // fabrication de la chaîne
   final results = UpdateDownloadResults(
+    mandatory: mandatory,
     uri: uri ?? Uri.parse("http://localhost/"),
     url: url,
     statusCode: statusCode,
