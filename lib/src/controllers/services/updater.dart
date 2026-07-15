@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../../../mbtools.dart';
 
@@ -1033,6 +1034,15 @@ class UpdateDownloadResults {
     // sauvegarde du contenu dans le disque
     saveTo(path, setExecuteMode: true);
 
+    // on ouvre avec la méthode système
+    try {
+      ToolsConfigApp.logger.i("[AppUpdateChecker] try to open update!");
+      ToolsHelpers.openDocumentDesktopNative(path);
+    } catch(e2) {
+      throw Exception("Failed to execute or open $path");
+    }
+
+    /*
     try {
       // démarrage du process en mode détaché pour pouvoir interagir ensuite
       ToolsConfigApp.logger.i("[AppUpdateChecker] try to execute update!");
@@ -1056,6 +1066,7 @@ class UpdateDownloadResults {
         throw Exception("Failed to execute or open $path");
       }
     }
+    */
 
     // fermeture du logiciel courant après une durée déterminée
     if (quitSoftware) {
@@ -1063,8 +1074,13 @@ class UpdateDownloadResults {
         AppUpdateChecker.textApplicationClosedInformation,
       );
 
-      Future.delayed(delayQuit ?? const Duration(seconds: 2), () {
-        ToolsConfigApp.logger.i("[AppUpdateChecker] Quit software after execute update!");
+      await Future.delayed(delayQuit ?? const Duration(seconds: 2));
+
+      ToolsConfigApp.logger.i("[AppUpdateChecker] Quit software after execute update!");
+      await windowManager.close();
+
+      // failback ?
+      Future<void>.delayed(Duration.zero, () {
         exit(0);
       });
     }
