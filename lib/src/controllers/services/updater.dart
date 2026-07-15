@@ -1000,11 +1000,15 @@ class UpdateDownloadResults {
     try {
       // démarrage du process en mode détaché pour pouvoir interagir ensuite
       ToolsConfigApp.logger.i("[AppUpdateChecker] try to execute update!");
-      await Process.start(
+      final process = await Process.start(
         path,
         arguments,
         mode: ProcessStartMode.detached,
       );
+
+      // informations
+      await Future.delayed(const Duration(milliseconds: 950));
+      ToolsConfigApp.logger.i("[AppUpdateChecker] pid: ${process.pid} ; process.exitCode: ${process.exitCode}");
     }
     catch(e) {
       // on est empêché d'exécuter le logiciel, on ouvre avec la méthode système
