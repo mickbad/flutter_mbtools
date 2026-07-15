@@ -20,6 +20,8 @@ Usage in flutter
 First class app with *MaterialApp* and fix navigatorKey (auto context in toast message, for example)
 
 ```dart
+import 'package:mbtools/mbtools.dart';
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
