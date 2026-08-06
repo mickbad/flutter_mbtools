@@ -94,3 +94,18 @@ in *main()* function
     }
   );
 ``` 
+
+### get and set metadata on mp3/mp4 (m4a, m4v)
+
+```dart
+    // Exemple d'utilisation :
+    final tags = await MediaMetadataManager.readTags('chanson.mp3');
+    print(tags.title);
+    
+    await MediaMetadataManager.writeTags(
+     'chanson.mp3',
+     const MediaTags(title: 'Nouveau titre', genre: 'Jazz'),
+    );
+```
+
+---

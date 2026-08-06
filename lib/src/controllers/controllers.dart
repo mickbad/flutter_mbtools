@@ -12,6 +12,7 @@ export 'services/log.dart';
 export 'services/apidev.dart';
 export 'services/MatomoAnalyticsHelper.dart';
 export 'services/updater.dart';
+export 'services/media_metadata_manager.dart';
 
 // les controleurs
 export 'SettingsService.dart';
