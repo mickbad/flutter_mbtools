@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../mbtools.dart';
 
@@ -944,7 +945,7 @@ class UpdateDownloadResults {
     String? dialogTitle,
     String successLabel = "Update file has been saved."
   }) async {
-     // nom par défaut si rien ne colle
+    // nom par défaut si rien ne colle
     final defaultFileName = (Platform.isWindows) ? "ricochets-download.exe": "ricochets-download.tmp";
 
     // Récupère le dernier élément du chemin (https://domain/path/to/test.exe -> test.exe)
@@ -1006,9 +1007,20 @@ class UpdateDownloadResults {
   /// Exécute un fichier comme un programme autonome
   ///
   Future<void> saveAndExecute({
+    /// chemin de la sauvegarde
     String? path,
-    List<String> arguments = const [],
+
+    /// permet de forcer la sauvegarde du fichier avec un nom particulier
+    /// si [path] n'est pas renseigné
+    String? forceFilename,
+
+    /// inutile car code plus exécuté
+    // List<String> arguments = const [],
+
+    /// on quitte le logiciel après exécution
     bool quitSoftware = true,
+
+    /// délai de la fermeture du logiciel après exécution
     Duration? delayQuit,
   }) async {
     // [path] est null, on détermine un lieu temporaire
@@ -1017,9 +1029,15 @@ class UpdateDownloadResults {
       final defaultFileName = (Platform.isWindows) ? "ricochets-download.exe": "ricochets-download.tmp";
 
       // Récupère le dernier élément du chemin (https://domain/path/to/test.exe -> test.exe)
-      var fileName = uri.pathSegments.isNotEmpty
-          ? uri.pathSegments.last
-          : defaultFileName;
+      String fileName;
+      if (forceFilename != null && forceFilename.isNotEmpty) {
+        fileName = p.basename(forceFilename);
+      }
+      else {
+        fileName = uri.pathSegments.isNotEmpty
+            ? uri.pathSegments.last
+            : defaultFileName;
+      }
 
       // Sécurité : évite un nom vide
       if (fileName.isEmpty) {
