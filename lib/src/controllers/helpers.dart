@@ -1547,10 +1547,16 @@ class ToolsHelpers {
       bytes: bytes,
     );
 
-    if (uri != null) {
-      return uri.path;
+    if (uri == null) {
+      return null;
     }
-    return null;
+
+    var path = uri.path;
+    if (Platform.isWindows && path.startsWith('/')) {
+      path = path.substring(1);
+    }
+
+    return path;
   }
 
   ///
