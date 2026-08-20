@@ -8,7 +8,7 @@ import Foundation
 import audioplayers_darwin
 import connectivity_plus
 import device_info_plus
-import file_picker
+import file_picker_darwin
 import flutter_desktop_sleep
 import flutter_local_notifications
 import local_notifier

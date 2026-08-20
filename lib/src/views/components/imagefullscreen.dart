@@ -462,12 +462,16 @@ class _FullScreenPageState extends State<FullScreenPage> {
           String? outputFile;
           if (widget.isDesktopApplication) {
             // localisation du fichier sur le desktop
-            outputFile = await FilePicker.saveFile(
+            final uri = await FilePicker.saveFile(
               dialogTitle: 'Please select an output file:',
               fileName: basename(imageDownloadedPathName),
               allowedExtensions: allowedExtensions,
               bytes: Uint8List(0),
             );
+
+            if (uri != null) {
+              outputFile = uri.path;
+            }
           } else {
             // localisation du fichier sur le mobile
             final paramsSaveMobileFile = SaveFileDialogParams(

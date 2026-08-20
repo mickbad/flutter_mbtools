@@ -1535,15 +1535,22 @@ class ToolsHelpers {
   }) async {
     final realFileName = fileName == null ? "" : p.basename(fileName);
     final Uint8List bytes = Uint8List(0);
-    return await FilePicker.saveFile(
+    final uri = await FilePicker.saveFile(
       dialogTitle: dialogTitle ?? 'Please select an output file:',
       fileName: realFileName,
       initialDirectory: initialDirectory,
       type: (allowedExtensions != null) ? FileType.custom : FileType.any,
       allowedExtensions: allowedExtensions,
-      lockParentWindow: lockParentWindow,
+      windowsOptions: WindowsOptions(
+        lockParentWindow: lockParentWindow,
+      ),
       bytes: bytes,
     );
+
+    if (uri != null) {
+      return uri.path;
+    }
+    return null;
   }
 
   ///
@@ -1577,26 +1584,26 @@ class ToolsHelpers {
       // allowMultiple: allowMultiple,
     );
 
-    if (result == null) {
+    if (result.isEmpty) {
       return [];
     }
 
     // liste des fichiers
     final List<Map<String, dynamic>> output = [];
-    for (final filename in result.files) {
+    for (final filename in result) {
+      final extension = p.extension(filename.name);
+      final content = await filename.readAsBytes();
+      final size = content.lengthInBytes;
+
       final Map<String, dynamic> data = {
         "name": filename.name,
         "path": filename.path,
-        "size": filename.size,
-        "size_human": humanFileSize(filename.size, sizeLabels: sizeLabels),
-        "extension_real": filename.extension,
-        "extension": filename.extension?.toLowerCase() ?? "",
+        "size": size,
+        "size_human": humanFileSize(size, sizeLabels: sizeLabels),
+        "extension_real": extension,
+        "extension": extension.toLowerCase(),
         "xfile": filename.xFile,
       };
-
-      // if (includeResultBytes) {
-      //   data["bytes"] = filename.bytes;
-      // }
 
       output.add(data);
     }
