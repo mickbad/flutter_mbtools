@@ -1368,6 +1368,7 @@ class ToolsHelpers {
   static String toastMeSuccess({
     BuildContext? context,
     String? title,
+    bool showTitle = true,
     required dynamic message,
     ToastFlashPosition flashPosition = ToastFlashPosition.center,
     bool stayDisplay = false,
@@ -1375,7 +1376,8 @@ class ToolsHelpers {
     int duration = 5,
   }) => toastMe(
     context: context,
-    title: title ?? ToolsConfigApp.appName,
+    title: title,
+    showTitle: showTitle,
     message: message,
     flashType: ToastFlashType.success,
     flashPosition: flashPosition,
@@ -1387,6 +1389,7 @@ class ToolsHelpers {
   static String toastMeError({
     BuildContext? context,
     String? title,
+    bool showTitle = true,
     required dynamic message,
     ToastFlashPosition flashPosition = ToastFlashPosition.center,
     bool stayDisplay = false,
@@ -1394,7 +1397,8 @@ class ToolsHelpers {
     int duration = 5,
   }) => toastMe(
     context: context,
-    title: title ?? ToolsConfigApp.appName,
+    title: title,
+    showTitle: showTitle,
     message: message,
     flashType: ToastFlashType.error,
     flashPosition: flashPosition,
@@ -1406,6 +1410,7 @@ class ToolsHelpers {
   static String toastMeWarning({
     BuildContext? context,
     String? title,
+    bool showTitle = true,
     required dynamic message,
     ToastFlashPosition flashPosition = ToastFlashPosition.center,
     bool stayDisplay = false,
@@ -1413,7 +1418,8 @@ class ToolsHelpers {
     int duration = 5,
   }) => toastMe(
     context: context,
-    title: title ?? ToolsConfigApp.appName,
+    title: title,
+    showTitle: showTitle,
     message: message,
     flashType: ToastFlashType.warning,
     flashPosition: flashPosition,
@@ -1425,6 +1431,7 @@ class ToolsHelpers {
   static String toastMeInfo({
     BuildContext? context,
     String? title,
+    bool showTitle = true,
     required dynamic message,
     ToastFlashPosition flashPosition = ToastFlashPosition.center,
     bool stayDisplay = false,
@@ -1432,7 +1439,8 @@ class ToolsHelpers {
     int duration = 5,
   }) => toastMe(
     context: context,
-    title: title ?? ToolsConfigApp.appName,
+    title: title,
+    showTitle: showTitle,
     message: message,
     flashType: ToastFlashType.info,
     flashPosition: flashPosition,
