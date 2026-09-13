@@ -1121,67 +1121,75 @@ class ToolsHelpers {
   ///
   /// Affichage d'un snackbar sans scaffold !
   ///
-  static void showSnackbarContext(String text, {
-    BuildContext? context,
-    String? title,
-    bool success = true,
-    int duration = 3000,
-    VoidCallback? onClose,
-    bool isDismissible = true,
-    bool blockBackgroundInteraction = false,
-  }) {
-    // recherche de contexte
+  static void showSnackbarContext(
+      String text, {
+        BuildContext? context,
+        String? title,
+        bool success = true,
+        int duration = 3000,
+        VoidCallback? onClose,
+        bool isDismissible = true,
+        bool blockBackgroundInteraction = false,
+      }) {
     context ??= ToolsConfigApp.appNavigatorKey.currentContext;
+
     if (context == null) {
-      ToolsConfigApp.logger.w("no context given or ToolsConfigApp.appNavigatorKey not set!");
+      ToolsConfigApp.logger.w(
+        "no context given or ToolsConfigApp.appNavigatorKey not set!",
+      );
       return;
     }
 
-    // on établit une icône suivant la situation du succès
-    Widget icon = (success)
-        ? Icon(
-            Icons.info_outline,
-            size: 28,
-            color: Colors.blue.shade300,
-          )
-        : Image.asset(
-            "packages/mbtools/assets/images/etonnant.gif",
-            height: 25.0,
-          );
+    final BuildContext flushbarContext = context;
 
-    // étude du titre de la fenêtre
+    final Widget icon = success
+        ? Icon(
+      Icons.info_outline,
+      size: 28,
+      color: Colors.blue.shade300,
+    )
+        : Image.asset(
+      "packages/mbtools/assets/images/etonnant.gif",
+      height: 25.0,
+    );
+
     title ??= ToolsConfigApp.appName;
 
-    // affichage de la flushbar
-    Flushbar(
-      title: title,
-      showProgressIndicator: true,
-      message: text,
-      icon: icon,
-      isDismissible: isDismissible,
-      blockBackgroundInteraction: blockBackgroundInteraction,
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!flushbarContext.mounted) {
+        return;
+      }
 
-      // Even the button can be styled to your heart's content
-      mainButton: TextButton(
-        child: Text(
-          (success) ? "succeeded" : "failed",
-          style: ((success)
-              ? TextStyle(color: Theme.of(context).primaryColor)
-              : const TextStyle(color: Colors.red)),
+      Flushbar(
+        title: title,
+        showProgressIndicator: true,
+        message: text,
+        icon: icon,
+        isDismissible: isDismissible,
+        blockBackgroundInteraction: blockBackgroundInteraction,
+        mainButton: TextButton(
+          child: Text(
+            success ? "succeeded" : "failed",
+            style: success
+                ? TextStyle(
+              color: Theme.of(flushbarContext).primaryColor,
+            )
+                : const TextStyle(
+              color: Colors.red,
+            ),
+          ),
+          onPressed: () {},
         ),
-        onPressed: () {},
-      ),
-      duration: Duration(milliseconds: duration),
-      onStatusChanged: (status) {
-        // activation de la fonction de rappel en cas de fermeture
-        if (onClose != null && status == FlushbarStatus.IS_HIDING) {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            onClose();
-          });
-        }
-      },
-      // Show it with a cascading operator
-    ).show(context);
+        duration: Duration(milliseconds: duration),
+        onStatusChanged: (status) {
+          if (onClose != null && status == FlushbarStatus.IS_HIDING) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              onClose();
+            });
+          }
+        },
+      ).show(flushbarContext);
+    });
   }
 
   /// //////////////////////////////////////////////////////////////////////////
@@ -1194,6 +1202,7 @@ class ToolsHelpers {
   static String toastMe({
     BuildContext? context,
     String? title,
+    bool showTitle = true,
     dynamic message = "Merci de votre action",
     ToastFlashType flashType = ToastFlashType.success,
     ToastFlashPosition flashPosition = ToastFlashPosition.bottom,
@@ -1282,7 +1291,7 @@ class ToolsHelpers {
       type: localFlashType,
       style: ToastificationStyle.flatColored,
       autoCloseDuration: (stayDisplay) ? null : Duration(seconds: duration),
-      title: Text(
+      title: (!showTitle) ? null : Text(
         title ?? ToolsConfigApp.appName,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
           color: ToolsConfigApp.appBlackColor,

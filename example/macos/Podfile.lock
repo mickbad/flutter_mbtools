@@ -19,10 +19,10 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/local_notifier/macos
 
 SPEC CHECKSUMS:
-  flutter_desktop_sleep: d7e29bb5c2944a0db954674f53ad190b79a7d69d
+  flutter_desktop_sleep: 73f50395cd890bd52826c69451d1bab02b89a5f9
   FlutterMacOS: c232990155153907050900a2e175c7773903ba4e
-  local_notifier: e9506bc66fc70311e8bc7291fb70f743c081e4ff
+  local_notifier: ebf072651e35ae5e47280ad52e2707375cb2ae4e
 
 PODFILE CHECKSUM: f0c21717cb7ee9112f915044c74bfceb5b12e02a
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0
