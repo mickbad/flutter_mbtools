@@ -1,0 +1,20 @@
+[
+  {
+    "version": "1.0.0+1",
+    "mandatory": false,
+    "beta": false,
+    "title": {
+      "fr": "Mise à jour fin été 26",
+      "en": "Update summer 26"
+    },
+    "message": {
+      "fr": "Ajout d'une page FAQ. Amélioration du design",
+      "en": "Add FAQ page - Design fixes."
+    },
+    "url": {
+      "macos": "https://github.com/mickbad/",
+      "linux": "https://github.com/mickbad/",
+      "windows": "https://github.com/mickbad/"
+    }
+  }
+]
