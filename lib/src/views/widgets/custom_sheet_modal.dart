@@ -14,7 +14,7 @@ class CustomSheetModal {
   ///
   /// Affichage d'une boîte de dialogue bottom sheet
   ///
-  static void bottomSheet(
+  static Future bottomSheet(
     BuildContext context, {
     CustomModalSheetController? controller,
     bool displayTitle = true,
@@ -37,9 +37,9 @@ class CustomSheetModal {
     EdgeInsets? childPadding,
     bool isDismissible = true,
     Widget? child,
-  }) {
+  }) async {
     // affichage de la fenêtre
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -82,7 +82,7 @@ class CustomSheetModal {
   ///
   /// Affichage d'une boîte de dialogue General sheet
   ///
-  static void generalDialog(
+  static Future generalDialog(
     BuildContext context, {
     CustomModalSheetController? controller,
     AlignmentGeometry alignmentBox = Alignment.bottomCenter,
@@ -110,7 +110,7 @@ class CustomSheetModal {
     double heightActionButtons = 40,
     List<Widget>? actionButtons,
     Widget? child,
-  }) {
+  }) async {
     // Etude de la position pour faire l'animation d'apparition
     Offset startAnim = const Offset(0, 1);
     Offset endAnim = const Offset(0, 0);
@@ -134,7 +134,7 @@ class CustomSheetModal {
     }
 
     // affichage de la fenêtre
-    showGeneralDialog(
+    await showGeneralDialog(
       barrierLabel: title ?? "",
       barrierDismissible: isDismissible,
       barrierColor: Colors.black.withValues(alpha: 0.5),
