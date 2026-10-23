@@ -1,6 +1,6 @@
 name: mbtools
 description: "Ensemble d'outils dart/flutter."
-version: 1.2.26+1
+version: 1.2.26+2
 homepage: https://www.ricochets.dev
 
 environment:
@@ -38,7 +38,11 @@ dependencies:
 
   # gestion des widgets
   flutter_animate: ^4.5.2
-  motion: ^2.0.2
+  # motion: ^2.0.2
+  motion:
+    git:
+      url: https://github.com/mickbad/flutter_motion.git
+
   glassmorphism_ui: ^0.3.0
   flutter_slidable: ^4.0.3
   pinput: ^7.0.0
